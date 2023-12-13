@@ -56,6 +56,10 @@ struct Reserva{
     char fecha[10];
 };
 
+struct Finanzas{
+    long double totalVentas = 0.0, gastosIngredientes = 0.0;
+};
+
 const char* GERENTE_USUARIO = "gerente";
 const char* GERENTE_CONTRASENA = "54321";
 const char* CAJERO_USUARIO = "cajero";
@@ -103,7 +107,6 @@ void gestionarEmpleados();
 void gestionarClientes();
 void gestionarMenu();
 void gestionarIngredientes();
-void gestionarFacturas();
 void gestionarReservas(int);
 
 bool verificarCodigo(int);
@@ -113,7 +116,6 @@ void ActualizarInredientes(int);
 double calcularTotal(vector<Plato>);
 Factura nuevaFactura();
 void imprimirFactura(Factura);
-void imprimirFacturas();
 void gestionarFinanzas();
 
 void menuCliente(int);
@@ -156,7 +158,7 @@ void pantallaAcceso() {
     system("cls");
     cout << "\nBIENVENIDO A TYPICA!" << endl;
     cout << "====================" << endl;
-    cout << "\n[1] Iniciar sesion\t[2] Ver menu\n\n--> ";
+    cout << "\n\t[1] Iniciar sesion\n\t[2] Ver menu\n\t[3] Salir\n\n--> ";
     cin >> seleccion;
 
     if(seleccion == "1"){
@@ -190,7 +192,7 @@ void pantallaAcceso() {
         }
         
     }
-    else{
+    else if(seleccion == "2"){
         menuCliente(0);
         cout << "\n[1] Volver\t[2] Salir\n\n--> ";
         cin >> seleccion;
@@ -199,8 +201,13 @@ void pantallaAcceso() {
             pantallaAcceso();
         }
         else{
+            cout << "\n>> Salienedo del sistema." << endl;
             exit(0);
         }
+    }
+    else{
+        cout << "\n>> Salienedo del sistema." << endl;
+        exit(0);
     }
     
 }
@@ -213,13 +220,13 @@ void menuGerente() {
         cout << "\t2. Gestionar clientes." << endl;
         cout << "\t3. Gestionar menu." << endl;
         cout << "\t4. Gestionar ingredientes."<<endl;
-        cout << "\t5. Gestionar facturas." << endl;
-        cout << "\t6. Gestionar finanzas." << endl;
-        cout << "\t7. Gestionar reservas." << endl;
-        cout << "\t8. Salir." << endl;
+        cout << "\t5. Gestionar reservas." << endl;
+        cout << "\t6. Generar factura." << endl;
+        cout << "\t7. Reporte financiero." << endl;
+        cout << "\t8. Cerrar sesion." << endl;
 
         int opcion;
-        cout << "\n\tSeleccione una opcion: ";
+        cout << "\n\t--> ";
         cin >> opcion;
 
         switch (opcion) {
@@ -236,16 +243,22 @@ void menuGerente() {
                 gestionarIngredientes();
                 break;
             case 5:
-                gestionarFacturas();
-                break;
+                gestionarReservas(0);
             case 6:
-                gestionarFinanzas();
+            {
+                menuCliente(1);
+                Factura f = nuevaFactura();
+                escribirArchivo(f);
+                cout << "\n>> Factura generada correctamente." << endl;
+                imprimirFactura(f);
+                break;
+            }
                 break;
             case 7:
-                gestionarReservas(0);
+                gestionarFinanzas();   
                 break;
             case 8:
-                exit(0);
+                pantallaAcceso();
             default:
                 cout << "\n>> Intente de nuevo." << endl;
         }
@@ -254,14 +267,14 @@ void menuGerente() {
 
 Empleado nuevoEmpleado(){
     Empleado e;
-    cout << "\n\tIngrese el CI del empleado: ";
+    cout << "\n\t- Ingrese el CI del empleado: ";
     cin >> e.CI;
-    cout << "\tIngrese el nombre del empleado: ";
+    cout << "\t- Ingrese el nombre del empleado: ";
     cin.ignore(256, '\n');
     cin.getline(e.nombre, 50);
-    cout << "\tIngrese el puesto del empleado: ";
+    cout << "\t- Ingrese el puesto del empleado: ";
     cin.getline(e.puesto, 30);
-    cout << "\tIngrese el sueldo del empleado: ";
+    cout << "\t- Ingrese el sueldo del empleado: ";
     cin >> e.sueldo;
 
     return e;
@@ -269,9 +282,9 @@ Empleado nuevoEmpleado(){
 
 Cliente nuevoCliente(){
     Cliente c;
-    cout << "\n\tIngrese el CI del cliente: ";
+    cout << "\n\t- Ingrese el CI del cliente: ";
     cin >> c.CI;
-    cout << "\tIngrese el nombre del cliente: ";
+    cout << "\t- Ingrese el nombre del cliente: ";
     cin.ignore(256, '\n');
     cin.getline(c.nombre, 50);
 
@@ -287,10 +300,10 @@ Plato nuevoPlato(){
         pl.push_back(p);
     platos.close();
     p.codigo = pl[pl.size()-1].codigo+1;
-    cout << "\tIngrese el nombre del plato: ";
+    cout << "\t- Ingrese el nombre del plato: ";
     cin.ignore(256, '\n');
     cin.getline(p.nombre, 100);
-    cout << "\tIngrese el precio del plato: ";
+    cout << "\t- Ingrese el precio del plato: ";
     cin >> p.precio;
     return p;
 }
@@ -557,7 +570,7 @@ void gestionarEmpleados() {
         cout << "\t5. Volver." << endl;
 
         int opcion;
-        cout << "\n\tSeleccione una opcion: ";
+        cout << "\n\t-->  ";
         cin >> opcion;
 
         switch(opcion){
@@ -603,7 +616,7 @@ void gestionarClientes() {
         cout << "\t5. Volver." << endl;
 
         int opcion;
-        cout << "\n\tSeleccione una opcion: ";
+        cout << "\n\t-->  ";
         cin >> opcion;
 
         switch(opcion){
@@ -649,7 +662,7 @@ void gestionarMenu() {
         cout << "\t5. Volver." << endl;
 
         int opcion;
-        cout << "\n\tSeleccione una opcion: ";
+        cout << "\n\t-->  ";
         cin >> opcion;
 
         switch(opcion){
@@ -687,13 +700,13 @@ void gestionarIngredientes()
 {
     cout << "\nGESTION DE INGREDIENTES" << endl;
     cout << "=======================" << endl;
-    cout << "\n\t1. Pedido de ingrediente antiguo." << endl;
-    cout << "\t2. Pedido de ingrediente nuevo." << endl;
+    cout << "\n\t1. Realizar pedido de un ingrediente ya existente." << endl;
+    cout << "\t2. Realizr pedido de un ingrediente nuevo." << endl;
     cout << "\t3. Mostrar inventario." << endl;
-    cout << "\t4. Volver am menu principal." << endl;
+    cout << "\t4. Volver." << endl;
 
     int opcion;
-    cout << "\n\tSeleccione una opcion: ";
+    cout << "\n\t-->  ";
     cin >> opcion;
     switch(opcion)
     {
@@ -709,7 +722,10 @@ void gestionarIngredientes()
 
             while(archivo.read((char*)&ing, sizeof(Ingredientes)))
             {
-                cout << "\n- Codigo: " << ing.codigoIngrediente << "\tNombre: " << ing.nombre << "\t\tCantidad: "<< ing.cantidad << "\tPrecio: " << ing.precio << " BOB." << endl;
+                cout << setfill(' ') << "\n- Codigo: " << setw(6) << left << ing.codigoIngrediente;
+                cout << "Nombre: " << setw(22) << left << ing.nombre;
+                cout << "Cantidad: "<< setw(12) << left << ing.cantidad;
+                cout << "Precio: " << ing.precio << " BOB." << endl;
                 ingre.push_back(ing);
             }
             archivo.close();
@@ -722,10 +738,15 @@ void gestionarIngredientes()
             int cantidad;
             cin >> cantidad;
 
+            double totalCompra = 0;
+
             for(unsigned int i=0; i < ingre.size(); i++)
             {
-                if(ingre[i].codigoIngrediente == codigoing)
+                if(ingre[i].codigoIngrediente == codigoing){
                     ingre[i].cantidad += cantidad;
+                    totalCompra = ingre[i].precio * cantidad;
+                    cout << "\n>> Se han comprado " << cantidad << " " << ingre[i].nombre << "s a " << totalCompra << " BOB." << endl;
+                }
             }
 
             ofstream sobreescribir;
@@ -733,24 +754,37 @@ void gestionarIngredientes()
             for(unsigned int i=0; i<ingre.size(); i++)
             sobreescribir.write((char*)&ingre[i], sizeof(Ingredientes));
             sobreescribir.close();
+
+            ifstream lectura;
+            ofstream escritura;
+            Finanzas fin;
+            lectura.open(ARCHIVO_FINANZAS, ios::binary);
+            escritura.open(ARCHIVO_TEMPORAL, ios::binary);
+            lectura.read((char*)&fin, sizeof(Finanzas));
+            fin.gastosIngredientes += totalCompra;
+            escritura.write((char*)&fin, sizeof(Finanzas));
+            lectura.close();
+            escritura.close();
+            remove(ARCHIVO_FINANZAS);
+            rename(ARCHIVO_TEMPORAL, ARCHIVO_FINANZAS);
             break;
         }
         case 2:
         {
             ifstream archivo;
             archivo.open(ARCHIVO_INGREDIENTES, ios::binary);
-            cout<<"Lista de ingredientes: "<<endl;
+            cout << "Lista de ingredientes: " << endl;
             Ingredientes ing;
             vector<Ingredientes> ingre;
             while(archivo.read((char*)&ing, sizeof(Ingredientes)))
                 ingre.push_back(ing);
             fflush(stdin);
-            cout<<"Ingrese el nombre del ingrediente nuevo: ";
+            cout << "Ingrese el nombre del ingrediente nuevo: ";
             cin.getline(ing.nombre, 50);
-            cout<<"Ingrese el precio del ingrediente nuevo: ";
-            cin>>ing.precio;
-            cout<<"ingrese de cuantos ingredientes sera el pedido: ";
-            cin>>ing.cantidad;
+            cout << "Ingrese el precio del ingrediente nuevo: ";
+            cin >> ing.precio;
+            cout << "ingrese de cuantos ingredientes sera el pedido: ";
+            cin >> ing.cantidad;
             ofstream aniadir;
             aniadir.open(ARCHIVO_INGREDIENTES, ios::binary | ios::app);
             ing.codigoIngrediente = ingre[ingre.size()-1].codigoIngrediente+1;
@@ -759,11 +793,28 @@ void gestionarIngredientes()
             break;
         }
         case 3:
+        {
+            ifstream archivo;
+            archivo.open(ARCHIVO_INGREDIENTES, ios::binary);
+
+            cout << "\n>> Lista de ingredientes: " << endl;
+
+            Ingredientes ing;
+
+            while(archivo.read((char*)&ing, sizeof(Ingredientes)))
+            {
+                cout << setfill(' ') << "\n- Codigo: " << setw(6) << left << ing.codigoIngrediente;
+                cout << "Nombre: " << setw(22) << left << ing.nombre;
+                cout << "Cantidad: "<< setw(12) << left << ing.cantidad;
+                cout << "Precio: " << ing.precio << " BOB." << endl;
+            }
+            archivo.close();
             break;
+        }
         case 4:
             menuGerente();
         default:
-        cout<<"Opcion no valida"<<endl;
+            cout << "\n>> Intente de nuevo." << endl;
         break;
     }
 }
@@ -780,7 +831,7 @@ void gestionarReservas(int x){
         cout << "\t5. Volver." << endl;
 
         int opcion;
-        cout << "\n\tSeleccione una opcion: ";
+        cout << "\n\t--> ";
         cin >> opcion;
 
         switch(opcion){
@@ -901,7 +952,7 @@ void ActualizarInredientes(int codigo)
     {
         if(r.codigoPlato == codigo)
         {
-            for(int i=0;i<ingre.size();i++)
+            for(unsigned int i = 0; i < ingre.size(); i++)
             {
                 if(r.CodigoIngrediente == ingre[i].codigoIngrediente)
                     ingre[i].cantidad -= r.cantidad;
@@ -935,24 +986,30 @@ double calcularTotal(vector<Plato> platos){
 
 Factura nuevaFactura(){
     Factura f;
-    cout << "\n\tIngrese el CI del cliente: ";
+    cout << "\n\t- Ingrese el CI del cliente (0: sin datos): ";
     cin >> f.CI;
 
-    bool bandera = verificarCliente(f.CI);
-    if(bandera){
-        cout << "\n>> El cliente ya ha sido registrado. Autocompletando informacion." << endl << endl;
-        Cliente c = nombreCliente(f.CI);
-        strcpy(f.nombreCliente, c.nombre);
+    if(f.CI != 0){
+        bool bandera = verificarCliente(f.CI);
+        if(bandera){
+            cout << "\n>> El cliente ya ha sido registrado. Autocompletando informacion." << endl << endl;
+            Cliente c = nombreCliente(f.CI);
+            strcpy(f.nombreCliente, c.nombre);
+        }
+        else{
+            Cliente c;
+            cout << "\t- Ingrese el nombre del cliente: ";
+            cin.ignore(256, '\n');
+            cin.getline(f.nombreCliente, 50);
+            c.CI = f.CI;
+            strcpy(c.nombre, f.nombreCliente);
+            escribirArchivo(c);
+        }
     }
     else{
-        Cliente c;
-        cout << "\tIngrese el nombre del cliente: ";
-        cin.ignore(256, '\n');
-        cin.getline(f.nombreCliente, 50);
-        c.CI = f.CI;
-        strcpy(c.nombre, f.nombreCliente);
-        escribirArchivo(c);
+        strcpy(f.nombreCliente, "SIN DATOS");
     }
+    
 
     time_t t = time(nullptr);
     tm* now = localtime(&t);
@@ -963,7 +1020,7 @@ Factura nuevaFactura(){
 
     int codigo = -1;
     while(codigo != 0){
-        cout << "\tIngrese el codigo del plato (0 para finalizar): ";
+        cout << "\t- Ingrese el codigo del plato (0: finalizar): ";
         cin >> codigo;
 
         bool bandera = verificarCodigo(codigo);
@@ -981,7 +1038,20 @@ Factura nuevaFactura(){
     f.total = calcularTotal(f.platos);
     cout << "\n>> El total de la compra es de " << f.total << " BOB." << endl;
 
-    cout << "\n\tIngrese el dinero recibido: ";
+    ifstream lectura;
+    ofstream escritura;
+    Finanzas fin;
+    lectura.open(ARCHIVO_FINANZAS, ios::binary);
+    escritura.open(ARCHIVO_TEMPORAL, ios::binary);
+    lectura.read((char*)&fin, sizeof(Finanzas));
+    fin.totalVentas += f.total;
+    escritura.write((char*)&fin, sizeof(Finanzas));
+    lectura.close();
+    escritura.close();
+    remove(ARCHIVO_FINANZAS);
+    rename(ARCHIVO_TEMPORAL, ARCHIVO_FINANZAS);
+
+    cout << "\n\t-Ingrese el dinero recibido: ";
     cin >> f.dineroRecibido;
     f.cambio = f.dineroRecibido - f.total;
    
@@ -989,30 +1059,34 @@ Factura nuevaFactura(){
 }
 
 void gestionarFinanzas() {
+    ifstream lectura;
+    lectura.open(ARCHIVO_EMPLEADOS, ios::binary);
 
-    fstream archivoFinanzas(ARCHIVO_FINANZAS, ios::in | ios::out | ios::binary);
+    Empleado e;
+    double totalSalarios = 0.0;
 
-    if (!archivoFinanzas) {
-        cerr << "Error al abrir el archivo de finanzas." << endl;
-        return;
+    while(lectura.read((char*)&e, sizeof(Empleado))){
+        totalSalarios += e.sueldo;
     }
 
+    lectura.close();
 
-    double totalVentas = 0.0;
-    archivoFinanzas.read(reinterpret_cast<char*>(&totalVentas), sizeof(double));
+    Finanzas fin;
+    lectura.open(ARCHIVO_FINANZAS, ios::binary);
+    lectura.read((char*)&fin, sizeof(Finanzas));
 
-    double descuentos = totalVentas * IMPUESTO;
+    double descuentos = fin.totalVentas * IMPUESTO;
 
-    double saldoFinal = totalVentas - descuentos;
-    //añadir sacar los salarios para pagarlos
+    double saldoFinal = fin.totalVentas - descuentos;
 
-    cout << "\nResumen financiero:" << endl;
+    cout << "\nREPORTE FINANCIERO" << endl;
+    cout << "==================" << endl;
     cout << fixed << setprecision(2);
-    cout << "Total de ventas: " << totalVentas << " BOB" << endl;
-    cout << "Descuentos (13% de impuestos): " << descuentos << " BOB" << endl;
-    cout << "Saldo final: " << saldoFinal << " BOB" << endl;
-
-    archivoFinanzas.close();
+    cout << "\n\tTotal de ventas: " << fin.totalVentas << " BOB." << endl;
+    cout << "\tDescuentos (13% de impuestos): " << descuentos << " BOB." << endl;
+    cout << "\tGastos en salarios: " << totalSalarios << " BOB." << endl;
+    cout << "\tGastos en ingredientes: " << fin.gastosIngredientes << " BOB." << endl;
+    cout << "\tSaldo final: " << saldoFinal << " BOB." << endl;
 }
 
 void imprimirFactura(Factura f){
@@ -1027,52 +1101,6 @@ void imprimirFactura(Factura f){
     cout << "\nTotal: " << f.total << " BOB" << endl;
     cout << "Dinero recibido: " << f.dineroRecibido << " BOB" << endl;
     cout << "Cambio: " << f.cambio << " BOB" << endl;
-}
-
-void imprimirFacturas(){
-    Factura f;
-    ifstream lectura;
-    lectura.open(ARCHIVO_FACTURA, ios::binary);
-    while(lectura.read((char*)&f, sizeof(Factura))){
-        
-    }
-    lectura.close();
-}
-
-void gestionarFacturas(){
-    cout << "\nGESTION DEL FACTURAS" << endl;
-    cout << "====================" << endl;
-
-    do{
-        cout << "\n\t1. Generar factura." << endl;
-        cout << "\t2. Mostrar lista de facturas." << endl;
-        cout << "\t3. Volver." << endl;
-
-        int opcion;
-        cout << "\n\tSeleccione una opcion: ";
-        cin >> opcion;
-
-        switch(opcion){
-            case 1:
-                {
-                    menuCliente(1);
-                    Factura f = nuevaFactura();
-                    escribirArchivo(f);
-                    cout << "\n>> Factura generada correctamente." << endl;
-                    imprimirFactura(f);
-                    break;
-                }
-            case 2:
-                cout << "\n>> Lista de facturas" << endl;
-                imprimirFacturas();
-                break;
-            case 3:
-                menuGerente();
-            default:
-                cout << "\n>> Intente de nuevo." << endl;
-        }  
-    }
-    while(true);
 }
 
 Reserva nuevaReserva(){
@@ -1112,7 +1140,7 @@ void menuCajero(){
         cout << "\t1. Ver menu." << endl;
         cout << "\t2. Generar factura." << endl;
         cout << "\t3. Gestionar reservas." << endl;
-        cout << "\t4. Salir." << endl;
+        cout << "\t4. Cerrar sesion." << endl;
 
         int opcion;
         cout << "\n\tSeleccione una opcion: ";
@@ -1134,7 +1162,7 @@ void menuCajero(){
             case 3:
                 gestionarReservas(1);
             case 4:
-                exit(0);
+                pantallaAcceso();
             default:
                 cout << "\n>> Intente de nuevo." << endl;
         }
@@ -1151,12 +1179,12 @@ void menuCliente(int x){
 
     if(x == 0){
         while(lectura.read((char*)&p, sizeof(Plato))){
-            cout << endl << "\t" << p.nombre << " ........" << p.precio << endl;
+            cout << endl << setfill('.') << setw(60) << left << p.nombre << p.precio << endl;
         }
     }
     else if(x == 1){
         while(lectura.read((char*)&p, sizeof(Plato))){
-            cout << endl << "\t" << p.codigo << "......" << p.nombre << "......" << p.precio << endl;
+            cout << endl << p.codigo << ": " << setfill('.') << setw(60) << left << p.nombre << p.precio << endl;
         }
     }
     
