@@ -109,6 +109,7 @@ void gestionarReservas(int);
 bool verificarCodigo(int);
 Cliente nombreCliente(int);
 Plato devolverPlato(int);
+void ActualizarInredientes(int);
 double calcularTotal(vector<Plato>);
 Factura nuevaFactura();
 void imprimirFactura(Factura);

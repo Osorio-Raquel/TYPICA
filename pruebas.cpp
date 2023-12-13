@@ -4,7 +4,7 @@
 struct Plato {
     int codigo;
     char nombre[100];
-    float precio;
+    double precio;
 };
 
 struct Ingredientes {
@@ -200,7 +200,7 @@ void leeringredientes()
 }
 void leerRecetas()
 {
-    Receta recetas [90];
+    Receta recetas [83];
     std::ifstream archivo("recetas.bin", std::ios::binary);
     if (!archivo.is_open()) {
         std::cerr << "Error al abrir el archivo." << std::endl;
