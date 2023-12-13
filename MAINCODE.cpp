@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <cstring>
 #include <string>
+#include <sstream>
+#include <limits>
 
 using namespace std;
 
@@ -123,6 +125,8 @@ void imprimirFactura(Factura);
 void gestionarFinanzas();
 
 void menuCliente(int);
+
+int obtenerEnteroDesdeEntrada();
 
 // Función principal la bonita aaaaaaaaaaaaaaaaaaa
 int main() {
@@ -728,9 +732,11 @@ vector <Ingredientes> MostrarIngreDientes()
 void AniadirIngredientesReceta(int codigoPlato)
 {
     int opcion;
-    cout<<"\t\t1. Ingrediente existente"<<endl;
-    cout<<"\t\t2. Ingrediente nuevo"<<endl;
-    cout<<"\t\t3. Volver al menu principal"<<endl;
+    cout<<"\tANIADIR INGREDIENTES A LAS RECETAS"<<endl;
+    cout<<"\t==================================="<<endl;
+    cout<<"\t\t1. Ingrediente existente."<<endl;
+    cout<<"\t\t2. Ingrediente nuevo."<<endl;
+    cout<<"\t\t3. Volver."<<endl;
     cin>>opcion;
     switch (opcion){
         case 1:{
@@ -752,7 +758,7 @@ void AniadirIngredientesReceta(int codigoPlato)
             AgregarReceta(codigoPlato, ingre[ingre.size()-1].codigoIngrediente);
         }
         case 3:
-            menuGerente();
+            gestionarMenu();
             break;
         default:
             cout<<"Opcion no valida"<<endl;
@@ -1272,3 +1278,20 @@ void menuCliente(int x){
     lectura.close();
 }
 
+int obtenerEnteroDesdeEntrada() {
+    string entrada;
+    int entero;
+
+    while (true) {
+        getline(std::cin, entrada);
+        istringstream iss(entrada);
+        if (iss >> entero && iss.eof()) {
+            break;
+        } else {
+            cout << "Error. Por favor, ingresa un valor entero válido." << std::endl;
+            cin.clear();
+            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
+    }
+    return entero;
+}
