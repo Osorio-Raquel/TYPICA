@@ -278,15 +278,19 @@ Cliente nuevoCliente(){
 }
 
 Plato nuevoPlato(){
+    ifstream platos;
+    platos.open(ARCHIVO_MENU, ios::binary);
+    vector<Plato> pl;
     Plato p;
-    cout << "\n\tIngrese el codigo del plato: ";
-    cin >> p.codigo;
+    while(platos.read((char*)&p, sizeof(Plato)))
+        pl.push_back(p);
+    platos.close();
+    p.codigo = pl[pl.size()-1].codigo+1;
     cout << "\tIngrese el nombre del plato: ";
     cin.ignore(256, '\n');
-    cin.getline(p.nombre, 50);
+    cin.getline(p.nombre, 100);
     cout << "\tIngrese el precio del plato: ";
     cin >> p.precio;
-
     return p;
 }
 
