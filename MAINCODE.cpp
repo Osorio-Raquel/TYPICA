@@ -84,7 +84,7 @@ void mostrar(const char*);
 void gestionarEmpleados();
 void gestionarClientes();
 void gestionarMenu();
-void PedidoDeIngredientes();
+void GestionarIngredientes();
 void gestionarFacturas();
 
 bool verificarCodigo(int);
@@ -192,6 +192,7 @@ void menuGerente() {
         cout << "\n\t1. Gestionar empleados." << endl;
         cout << "\t2. Gestionar clientes." << endl;
         cout << "\t3. Gestionar menu." << endl;
+        cout << "\t4. Gestionar Ingredientes."<<endl;
         cout << "\t4. Gestionar facturas." << endl;
         cout << "\t5. Gestionar finanzas." << endl;
         cout << "\t6. Salir." << endl;
@@ -211,7 +212,7 @@ void menuGerente() {
                 gestionarMenu();
                 break;
             case 4:
-                PedidoDeIngredientes();
+                GestionarIngredientes();
                 break;
             case 5:
                 gestionarFacturas();
@@ -612,7 +613,7 @@ void gestionarMenu() {
     while(true);
 }
 
-void PedidoDeIngredientes()
+void GestionarIngredientes()
 {
     cout<<"\n1. Pedido de ingrediente antiguo"<<endl;
     cout<<"2. Pedido de ingrediente nuevo"<<endl;
