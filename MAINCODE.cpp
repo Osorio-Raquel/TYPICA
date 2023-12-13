@@ -127,6 +127,7 @@ void gestionarFinanzas();
 void menuCliente(int);
 
 int obtenerEnteroDesdeEntrada();
+double obtenerDoubleDesdeEntrada();
 
 // Función principal la bonita aaaaaaaaaaaaaaaaaaa
 int main() {
@@ -284,7 +285,7 @@ Empleado nuevoEmpleado(){
     cout << "\t- Ingrese el puesto del empleado: ";
     cin.getline(e.puesto, 30);
     cout << "\t- Ingrese el sueldo del empleado: ";
-    cin >> e.sueldo;
+    e.sueldo = obtenerDoubleDesdeEntrada();
 
     return e;
 }
@@ -316,7 +317,7 @@ Plato nuevoPlato(int x){
     cin.ignore(256, '\n');
     cin.getline(p.nombre, 100);
     cout << "\t- Ingrese el precio del plato: ";
-    cin >> p.precio;
+    p.precio = obtenerDoubleDesdeEntrada();
     AniadirIngredientesReceta(p.codigo);
     return p;
 }
@@ -745,7 +746,7 @@ void AniadirIngredientesReceta(int codigoPlato)
             int codigoing = -1;
             while(codigoing != 0){
                 cout<<"Ingrese el codigo del ingrediente a agregar al platillo (0 para salir): ";
-                cin>>codigoing;
+                codigoing = obtenerEnteroDesdeEntrada();
                 if(codigoing==0)
                     break;
                 AgregarReceta(codigoPlato, codigoing);
@@ -779,9 +780,9 @@ void IngredienteNuevo()
     cout << "Ingrese el nombre del ingrediente nuevo: ";
     cin.getline(ing.nombre, 50);
     cout << "Ingrese el precio del ingrediente nuevo: ";
-    cin >> ing.precio;
+    ing.precio = obtenerDoubleDesdeEntrada();
     cout << "ingrese de cuantos ingredientes sera el pedido: ";
-    cin >> ing.cantidad;
+    ing.cantidad = obtenerEnteroDesdeEntrada();
     ofstream aniadir;
     aniadir.open(ARCHIVO_INGREDIENTES, ios::binary | ios::app);
     ing.codigoIngrediente = ingre[ingre.size()-1].codigoIngrediente+1;
@@ -839,11 +840,11 @@ void gestionarIngredientes()
 
             cout << "\n>> Ingrese el codigo de que ingrediente desea hacer el pedido: ";
             int codigoing;
-            cin >> codigoing;
+            codigoing = obtenerEnteroDesdeEntrada();
 
             cout << "\n>> Ingrese de cuantos ingredientes sera el pedido: ";
             int cantidad;
-            cin >> cantidad;
+            cantidad = obtenerEnteroDesdeEntrada();
 
             double totalCompra = 0;
 
@@ -1141,7 +1142,7 @@ Factura nuevaFactura(){
     rename(ARCHIVO_TEMPORAL, ARCHIVO_FINANZAS);
 
     cout << "\n\t-Ingrese el dinero recibido: ";
-    cin >> f.dineroRecibido;
+    f.dineroRecibido = obtenerDoubleDesdeEntrada();
     f.cambio = f.dineroRecibido - f.total;
    
     return f;
@@ -1279,7 +1280,8 @@ void menuCliente(int x){
     lectura.close();
 }
 
-int obtenerEnteroDesdeEntrada() {
+int obtenerEnteroDesdeEntrada() 
+{
     string entrada;
     int entero;
 
@@ -1293,4 +1295,21 @@ int obtenerEnteroDesdeEntrada() {
         }
     }
     return entero;
+}
+
+double obtenerDoubleDesdeEntrada() 
+{
+    string entrada;
+    double valorDouble;
+    while (true) {
+        cout << "Ingresa un valor double: ";
+        getline(cin, entrada);
+        istringstream iss(entrada);
+        if (iss >> valorDouble && iss.eof()) {
+            break;
+        } else {
+            cerr << "Error. Por favor, ingresa un valor double válido." << endl;
+        }
+    }
+    return valorDouble;
 }
