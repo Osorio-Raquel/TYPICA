@@ -26,6 +26,12 @@ struct Plato {
     double precio;
 };
 
+struct Ingredientes {
+    int codigoIngrediente;
+    char nombre[50];
+    int cantidad;
+    double precio;
+};
 struct Factura {
     int CI;
     char nombreCliente[50];
@@ -43,6 +49,7 @@ const char* CAJERO_CONTRASENA = "12345";
 const char* ARCHIVO_EMPLEADOS = "empleados.bin";
 const char* ARCHIVO_CLIENTES = "clientes.bin";
 const char* ARCHIVO_MENU = "menu.bin";
+const char* ARCHIVO_INGREDIENTES = "ingredientes.bin";
 const char* ARCHIVO_FACTURA = "factura.bin";
 const char* ARCHIVO_FINANZAS = "finanzas.bin";
 
@@ -599,6 +606,78 @@ void gestionarMenu() {
         }  
     }
     while(true);
+}
+
+void PedidoDeIngredientes()
+{
+    cout<<"\n1. Pedido de ingrediente antiguo"<<endl;
+    cout<<"2. Pedido de ingrediente nuevo"<<endl;
+    cout<<"3. Volver am menu principal"<<endl;
+    int opcion;
+    cout<<"Opcion a elegir: ";
+    cin>>opcion;
+    switch(opcion)
+    {
+        case 1:
+        {
+            ifstream archivo;
+            archivo.open(ARCHIVO_INGREDIENTES, ios::binary);
+            cout<<"Lista de ingredientes: "<<endl;
+            Ingredientes ing;
+            vector<Ingredientes> ingre;
+            while(archivo.read((char*)&ing, sizeof(Ingredientes)))
+            {
+                cout << "Codigo: " << ing.codigoIngrediente << ", Nombre: " << ing.nombre <<" Cantidad: "<< ing.cantidad << ", Precio: " << ing.precio << " BOB" << endl;
+                ingre.push_back(ing);
+            }
+            archivo.close();
+            cout<<"Ingrese el codigo de que ingrediente desea hacer el pedido: ";
+            int codigoing;
+            cin>>codigoing;
+            cout<<"Ingrese de cuantos ingredientes sera el pedido: ";
+            int cantidad;
+            cin>>cantidad;
+            for(unsigned int i=0; i<ingre.size(); i++)
+            {
+                if(ingre[i].codigoIngrediente == codigoing)
+                    ingre[i].cantidad += cantidad;
+            }
+            ofstream sobreescribir;
+            sobreescribir.open(ARCHIVO_INGREDIENTES, ios::binary);
+            for(unsigned int i=0; i<ingre.size(); i++)
+            sobreescribir.write((char*)&ingre[i], sizeof(Ingredientes));
+            sobreescribir.close();
+            break;
+        }
+        case 2:
+        {
+            ifstream archivo;
+            archivo.open(ARCHIVO_INGREDIENTES, ios::binary);
+            cout<<"Lista de ingredientes: "<<endl;
+            Ingredientes ing;
+            vector<Ingredientes> ingre;
+            while(archivo.read((char*)&ing, sizeof(Ingredientes)))
+                ingre.push_back(ing);
+            fflush(stdin);
+            cout<<"Ingrese el nombre del ingrediente nuevo: ";
+            cin.getline(ing.nombre, 50);
+            cout<<"Ingrese el precio del ingrediente nuevo: ";
+            cin>>ing.precio;
+            cout<<"ingrese de cuantos ingredientes sera el pedido: ";
+            cin>>ing.cantidad;
+            ofstream aniadir;
+            aniadir.open(ARCHIVO_INGREDIENTES, ios::binary | ios::app);
+            ing.codigoIngrediente = ingre[ingre.size()-1].codigoIngrediente+1;
+            aniadir.write((char*)&ing, sizeof(Ingredientes));
+            aniadir.close();
+            break;
+        }
+        case 3:
+            break;
+        default:
+        cout<<"Opcion no valida"<<endl;
+        break;
+    }
 }
 
 Cliente nombreCliente(int ci){
