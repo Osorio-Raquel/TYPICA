@@ -64,6 +64,7 @@ const char* ARCHIVO_EMPLEADOS = "empleados.bin";
 const char* ARCHIVO_CLIENTES = "clientes.bin";
 const char* ARCHIVO_MENU = "menu.bin";
 const char* ARCHIVO_INGREDIENTES = "ingredientes.bin";
+const char* ARCHIVO_RECETAS = "recetas.bin";
 const char* ARCHIVO_FACTURA = "factura.bin";
 const char* ARCHIVO_FINANZAS = "finanzas.bin";
 const char* ARCHIVO_RESERVA = "reservas.bin";
@@ -871,11 +872,42 @@ Plato devolverPlato(int codigo){
     while(lectura.read((char*)&p, sizeof(Plato))){
         if(codigo == p.codigo){
             lectura.close();
+            ActualizarInredientes(codigo);
             return p;
         }
     }
     lectura.close();
     return p;
+}
+
+void ActualizarInredientes(int codigo)
+{
+    ifstream ingredientesarchivolectura;
+    vector<Ingredientes> ingre;
+    Ingredientes i;
+    ingredientesarchivolectura.open(ARCHIVO_INGREDIENTES, ios::binary);
+    while(ingredientesarchivolectura.read((char*)&i, sizeof(Ingredientes)))
+        ingre.push_back(i);
+    ingredientesarchivolectura.close();
+    ifstream recetitas;
+    recetitas.open(ARCHIVO_RECETAS, ios::binary);
+    Receta r;
+    while(recetitas.read((char*)&r, sizeof(Receta)))
+    {
+        if(r.codigoPlato == codigo)
+        {
+            for(int i=0;i<ingre.size();i++)
+            {
+                if(r.CodigoIngrediente == ingre[i].codigoIngrediente)
+                    ingre[i].cantidad -= r.cantidad;
+            }
+        }
+    }
+    recetitas.close();
+    ofstream IngrecientesArchivoEscritura;
+    IngrecientesArchivoEscritura.open(ARCHIVO_INGREDIENTES, ios::binary);
+    IngrecientesArchivoEscritura.write(reinterpret_cast<char*>(ingre.data()), ingre.size()*sizeof(Ingredientes));
+    IngrecientesArchivoEscritura.close();
 }
 
 double calcularTotal(vector<Plato> platos){
