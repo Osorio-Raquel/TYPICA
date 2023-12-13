@@ -2,13 +2,16 @@
 #include <fstream>
 #include <vector>
 #include <iomanip>
+#include <stdlib.h>
+#include <cstring>
 
 using namespace std;
 
 //Cambiar las structuras cosa que sea char(?)
 struct Empleado {
-    string puesto;
-    string nombre;
+    int CI;
+    char puesto[30];
+    char nombre[50];
     double sueldo;
 };
 
@@ -33,86 +36,132 @@ struct Factura {
     string fecha;
 };
 
-const string GERENTE_USUARIO = "gerente";
-const string GERENTE_CONTRASENA = "54321";
-const string CAJERO_USUARIO = "cajero";
-const string CAJERO_CONTRASENA = "12345";
-const string ARCHIVO_EMPLEADOS = "empleados.bin";
-const string ARCHIVO_CLIENTES = "clientes.bin";
-const string ARCHIVO_MENU = "menu.bin";
-const string ARCHIVO_FACTURA = "factura.bin";
-const string ARCHIVO_FINANZAS = "finanzas.bin";
+const char* GERENTE_USUARIO = "gerente";
+const char* GERENTE_CONTRASENA = "54321";
+const char* CAJERO_USUARIO = "cajero";
+const char* CAJERO_CONTRASENA = "12345";
+const char* ARCHIVO_EMPLEADOS = "empleados.bin";
+const char* ARCHIVO_CLIENTES = "clientes.bin";
+const char* ARCHIVO_MENU = "menu.bin";
+const char* ARCHIVO_FACTURA = "factura.bin";
+const char* ARCHIVO_FINANZAS = "finanzas.bin";
+
+const char* ARCHIVO_TEMPORAL = "temporal.bin";
+
 const double IMPUESTO = 0.13;
-
-void inicializarArchivos() {
-    ofstream archivoEmpleados(ARCHIVO_EMPLEADOS, ios::app | ios::binary);
-    archivoEmpleados.close();
-
-    ofstream archivoClientes(ARCHIVO_CLIENTES, ios::app | ios::binary);
-    archivoClientes.close();
-
-    ofstream archivoMenu(ARCHIVO_MENU, ios::app | ios::binary);
-    archivoMenu.close();
-
-    ofstream archivoFactura(ARCHIVO_FACTURA, ios::app | ios::binary);
-    archivoFactura.close();
-
-    ofstream archivoFinanzas(ARCHIVO_FINANZAS, ios::app | ios::binary);
-    archivoFinanzas.close();
-    cout << "Archivos inicializados" << endl;
-}
 
 
 // funciones
+void inicializarArchivos();
 void pantallaAcceso();
+
 void menuGerente();
 void menuCajero();
+
+Empleado nuevoEmpleado();
+Cliente nuevoCliente();
+Plato nuevoPlato();
+Factura nuevaFactura();
+
+void escribirArchivo(Empleado);
+void escribirArchivo(Cliente);
+void escribirArchivo(Plato);
+void escribirArchivo(Factura);
+
+void eliminarDeArchivo(const char*, int);
+void modificarArchivo(int, Empleado);
+void mostrar(const char*);
+
 void gestionarEmpleados();
 void gestionarClientes();
 void gestionarMenu();
 void generarFactura();
 void gestionarFinanzas();
+
 void menuCliente();
 
 // Función principal la bonita aaaaaaaaaaaaaaaaaaa
 int main() {
+    //inicializarArchivos();
     pantallaAcceso();
     return 0;
+}
+
+void inicializarArchivos() {
+    ofstream archivoEmpleados;
+    archivoEmpleados.open(ARCHIVO_EMPLEADOS, ios::app | ios::binary);
+    archivoEmpleados.close();
+
+    ofstream archivoClientes;
+    archivoClientes.open(ARCHIVO_CLIENTES, ios::app | ios::binary);
+    archivoClientes.close();
+
+    ofstream archivoMenu;
+    archivoMenu.open(ARCHIVO_MENU, ios::app | ios::binary);
+    archivoMenu.close();
+
+    ofstream archivoFactura;
+    archivoFactura.open(ARCHIVO_FACTURA, ios::app | ios::binary);
+    archivoFactura.close();
+
+    ofstream archivoFinanzas;
+    archivoFinanzas.open(ARCHIVO_FINANZAS, ios::app | ios::binary);
+    archivoFinanzas.close();
+    
+    cout << ">> Archivos inicializados." << endl;
 }
 
 // Implementación de funciones
 void pantallaAcceso() {
     string usuario, contrasena;
-    cout << "Bienvenido al sistema de typica? typican't" << endl;
-    cout << "Usuario: ";
-    cin >> usuario;
-    cout << "Contraseña: ";
-    cin >> contrasena;
 
-    if (usuario == GERENTE_USUARIO && contrasena == GERENTE_CONTRASENA) {
-        menuGerente();
-    } else if (usuario == CAJERO_USUARIO && contrasena == CAJERO_CONTRASENA) {
-        menuCajero();
-    } else if (usuario == "0" && contrasena == "0"){
-        menuCliente();
+    for(int i = 0; i < 3; i++){
+        system("cls");
+        cout << "\nBIENVENIDO A TYPICA!" << endl;
+        cout << "=====================" << endl;
+        cout << "\n\tUsuario: ";
+        cin >> usuario;
+        cout << "\tContraseña: ";
+        cin >> contrasena;
+
+        if (usuario == GERENTE_USUARIO && contrasena == GERENTE_CONTRASENA) {
+            menuGerente();
+            break;
+        } else if (usuario == CAJERO_USUARIO && contrasena == CAJERO_CONTRASENA) {
+            menuCajero();
+            break;
+        } else if (usuario == "0" && contrasena == "0"){
+            menuCliente();
+            break;
+        }
+        else {
+            if(i + 1 == 3){
+                cout << "\n>> Ha ingresado como cliente." << endl << endl;
+                system("pause");
+                menuCliente();
+            }
+            else{
+                cout << "\n>> Acceso no autorizado. Vuelva a intentar." << endl << endl;
+                system("pause");
+            }
+        }
     }
-    else {
-        cout << "Acceso no autorizado. go away >:c." << endl;
-    }
+    
 }
 
 void menuGerente() {
     while (true) {
-        cout << "\nMenu Gerente:" << endl;
-        cout << "1. Gestionar empleados" << endl;
-        cout << "2. Gestionar clientes" << endl;
-        cout << "3. Gestionar menu" << endl;
-        cout << "4. Generar factura" << endl;
-        cout << "5. Gestionar finanzas" << endl;
-        cout << "6. Salir" << endl;
+        cout << "\nMENU GERENTE" << endl;
+        cout << "=============" << endl;
+        cout << "\n\t1. Gestionar empleados." << endl;
+        cout << "\t2. Gestionar clientes." << endl;
+        cout << "\t3. Gestionar menu." << endl;
+        cout << "\t4. Generar factura." << endl;
+        cout << "\t5. Gestionar finanzas." << endl;
+        cout << "\t6. Salir." << endl;
 
         int opcion;
-        cout << "Seleccione una opcion: ";
+        cout << "\n\tSeleccione una opcion: ";
         cin >> opcion;
 
         switch (opcion) {
@@ -134,94 +183,189 @@ void menuGerente() {
             case 6:
                 exit(0);
             default:
-                cout << "Intente nuevamente" << endl;
+                cout << "\n>> Intente de nuevo." << endl;
         }
     }
 }
 
-void gestionarEmpleados() {
-    fstream archivoEmpleados(ARCHIVO_EMPLEADOS, ios::in | ios::out | ios::binary);
+Empleado nuevoEmpleado(){
+    Empleado e;
+    cout << "\n\tIngrese el CI del empleado: ";
+    cin >> e.CI;
+    cout << "\tIngrese el nombre del empleado: ";
+    cin.ignore(256, '\n');
+    cin.getline(e.nombre, 50);
+    cout << "\tIngrese el puesto del empleado: ";
+    cin.getline(e.puesto, 30);
+    cout << "\tIngrese el sueldo del empleado: ";
+    cin >> e.sueldo;
 
-    if (!archivoEmpleados) {
-        cerr << "Error" << endl;
-        return;
+    return e;
+}
+
+void escribirArchivo(Empleado e){
+    ofstream escritura;
+    escritura.open(ARCHIVO_EMPLEADOS, ios::binary | ios::app);
+    if(escritura.good()){
+        escritura.write((char*)&e, sizeof(Empleado));
     }
-
-    vector<Empleado> empleados;
-
-    // Leer i think
-    while (!archivoEmpleados.eof()) {
-        Empleado empleado;
-        archivoEmpleados.read(reinterpret_cast<char*>(&empleado), sizeof(Empleado));
-        if (!archivoEmpleados.eof()) {
-            empleados.push_back(empleado);
-        }
+    else{
+        cout << "\n>> No se pudo abrir el archivo de empleados." << endl;
     }
+    escritura.close();
+}
 
-    // Mostrar
-    cout << "\nLista de empleados:" << endl;
-    for (const auto& empleado : empleados) {
-        cout << "Puesto: " << empleado.puesto << ", Nombre: " << empleado.nombre << ", Sueldo: " << empleado.sueldo << " BOB al mes" << endl;
+Cliente nuevoCliente(){
+    Cliente c;
+    cout << "\tIngrese el CI del cliente: ";
+    cin >> c.CI;
+    cout << "\n\tIngrese el nombre del cliente: ";
+    getline(cin, c.nombre);
+
+    return c;
+}
+
+void escribirArchivo(Cliente c){
+    ofstream escritura;
+    escritura.open(ARCHIVO_EMPLEADOS, ios::binary | ios::app);
+    if(escritura.good()){
+        escritura.write((char*)&c, sizeof(Cliente));
     }
+    else{
+        cout << "\n>> No se pudo abrir el archivo de empleados." << endl;
+    }
+    escritura.close();
+}
 
-    //añadir o eliminar empleados
-    cout << "\n1. Añadir empleado" << endl;
-    cout << "2. Eliminar empleado" << endl;
-    cout << "3. Volver al menu principal" << endl;
+void eliminarDeArchivo(const char* archivo, int x){
+    ifstream lectura;
+    lectura.open(archivo, ios::binary);
 
-    int opcion;
-    cout << "Seleccione una opcion: ";
-    cin >> opcion;
+    ofstream escritura;
+    escritura.open(ARCHIVO_TEMPORAL, ios::binary);
 
-    switch (opcion) {
-        case 1: {
-            Empleado nuevoEmpleado;
-            cout << "Ingrese el puesto del nuevo empleado: ";
-            //nose aca no toma la linea entera
-            cin >> nuevoEmpleado.puesto;
-            cout << "Ingrese el nombre del nuevo empleado: ";
-            cin >> nuevoEmpleado.nombre;
-            cout << "Ingrese el sueldo del nuevo empleado: ";
-            cin >> nuevoEmpleado.sueldo;
-
-            empleados.push_back(nuevoEmpleado);
-
-            // Guardar
-            archivoEmpleados.seekp(0, ios::end);
-            archivoEmpleados.write(reinterpret_cast<char*>(&nuevoEmpleado), sizeof(Empleado));
-
-            cout << "Empleado añadido correctamente." << endl;
-            break;
-        }
-        case 2: {
-            int indice;
-            cout << "Ingrese el indice del empleado a eliminar: ";
-            cin >> indice;
-
-            if (indice >= 0 && indice < empleados.size()) {
-                // Eliminar empleado del vector
-                empleados.erase(empleados.begin() + indice);
-
-                // Sobrescribir el archivo con el nuevo vector de empleados
-                archivoEmpleados.close();
-                archivoEmpleados.open(ARCHIVO_EMPLEADOS, ios::out | ios::binary);
-                for (const auto& empleado : empleados) {
-                    archivoEmpleados.write(reinterpret_cast<const char*>(&empleado), sizeof(Empleado));
-                }
-
-                cout << "Empleado eliminado correctamente." << endl;
-            } else {
-                cout << "NO" << endl;
+    if(archivo == ARCHIVO_EMPLEADOS){
+        Empleado e;
+        while(lectura.read((char*)&e, sizeof(Empleado))){
+            if(x != e.CI){
+                escritura.write((char*)&e, sizeof(Empleado));
             }
-            break;
         }
-        case 3:
-            break;
-        default:
-            cout << "Opción no valida" << endl;
+    }else if(archivo == ARCHIVO_CLIENTES){
+        Cliente c;
+        while(lectura.read((char*)&c, sizeof(Cliente))){
+            if(x != c.CI){
+                escritura.write((char*)&c, sizeof(Cliente));
+            }
+        }
     }
 
-    archivoEmpleados.close();
+    lectura.close();
+    escritura.close();
+
+    remove(archivo);
+    rename(ARCHIVO_TEMPORAL, archivo);
+}
+
+void modificarArchivo(int x, Empleado empleado){
+    ifstream lectura;
+    lectura.open(ARCHIVO_EMPLEADOS, ios::binary);
+
+    ofstream escritura;
+    escritura.open(ARCHIVO_TEMPORAL, ios::binary);
+
+    Empleado e;
+
+    while(lectura.read((char*)&e, sizeof(Empleado))){
+        if(x != e.CI){
+            escritura.write((char*)&e, sizeof(Empleado));
+        }
+        else{
+            escritura.write((char*)&empleado, sizeof(Empleado));
+        }
+    }
+
+    lectura.close();
+    escritura.close();
+
+    remove(ARCHIVO_EMPLEADOS);
+    rename(ARCHIVO_TEMPORAL, ARCHIVO_EMPLEADOS);
+}
+
+void mostrar(const char* archivo){
+    cout << "\n--> Lista de empleados:" << endl;
+
+    ifstream lectura;
+    lectura.open(archivo, ios::binary);
+    
+    if(lectura.good()){
+        if(archivo == ARCHIVO_EMPLEADOS){
+            Empleado e;
+            while(lectura.read((char*)&e, sizeof(Empleado))){
+                cout << "\n\tCarnet de Identidad: " << e.CI << endl;
+                cout << "\tNombre: " << e.nombre << endl;
+                cout << "\tPuesto: " << e.puesto << endl;
+                cout << "\tSueldo: " << e.sueldo << " BOB al mes." << endl;
+            }
+        }else if(archivo == ARCHIVO_CLIENTES){
+            Cliente c;
+            while(lectura.read((char*)&c, sizeof(Cliente))){
+                cout << "\n\tCarnet de Identidad: " << c.CI << endl;
+                cout << "\tNombre: " << c.nombre << endl;
+            }
+        }
+    }
+    else{
+        cout << "\n>> No se pudo abrir el archivo de empleados." << endl;
+    }
+
+    lectura.close();
+}
+
+void gestionarEmpleados() {
+    cout << "\nGESTION DE EMPLEADOS" << endl;
+    cout << "====================" << endl;
+
+    do{
+        cout << "\n\t1. Añadir empleado." << endl;
+        cout << "\t2. Eliminar empleado." << endl;
+        cout << "\t3. Modificar empleado." << endl;
+        cout << "\t4. Mostrar lista de empleados." << endl;
+        cout << "\t5. Volver al menu principal." << endl;
+
+        int opcion;
+        cout << "\n\tSeleccione una opcion: ";
+        cin >> opcion;
+
+        switch(opcion){
+            int ci;
+            case 1:
+                escribirArchivo(nuevoEmpleado());
+                cout << "\n>> Se ha añadido al empleado." << endl;
+                break;
+            case 2:
+                cout << "\nIngrese el CI del empleado a eliminar: ";
+                cin >> ci;
+                eliminarDeArchivo(ARCHIVO_EMPLEADOS, ci);
+                cout << "\n>> Se ha eliminado al empleado." << endl;
+                break;
+            case 3:
+                cout << "\nIngrese el CI del empleado a modificar: ";
+                cin >> ci;
+                modificarArchivo(ci, nuevoEmpleado());
+                cout << "\n>> Se ha modificado al empleado." << endl;
+                break;
+            case 4:
+                mostrar(ARCHIVO_EMPLEADOS);
+                cout << endl;
+                break;
+            case 5:
+                menuGerente();
+            default:
+                cout << "\n>> Intente de nuevo." << endl;
+        }  
+    }
+    while(true);
 }
 
 void gestionarClientes() {
@@ -377,6 +521,7 @@ void gestionarFinanzas() {
 
     archivoFinanzas.close();
 }
+
 void menuCajero() {
     ifstream archivoMenu(ARCHIVO_MENU, ios::binary);
 
@@ -497,7 +642,8 @@ void menuCajero() {
 
     archivoFactura.close();
 }
- void menuCliente(){
+
+void menuCliente(){
     ifstream archivoMenu(ARCHIVO_MENU, ios::binary);
 
     Plato plato;
@@ -509,3 +655,4 @@ void menuCajero() {
 
     archivoMenu.close();
 }
+
