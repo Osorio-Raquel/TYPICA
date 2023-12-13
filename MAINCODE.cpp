@@ -84,6 +84,7 @@ void mostrar(const char*);
 void gestionarEmpleados();
 void gestionarClientes();
 void gestionarMenu();
+void PedidoDeIngredientes();
 void gestionarFacturas();
 
 bool verificarCodigo(int);
@@ -210,12 +211,15 @@ void menuGerente() {
                 gestionarMenu();
                 break;
             case 4:
-                gestionarFacturas();
+                PedidoDeIngredientes();
                 break;
             case 5:
-                gestionarFinanzas();
+                gestionarFacturas();
                 break;
             case 6:
+                gestionarFinanzas();
+                break;
+            case 7:
                 exit(0);
             default:
                 cout << "\n>> Intente de nuevo." << endl;
