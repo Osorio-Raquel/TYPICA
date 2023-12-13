@@ -87,7 +87,7 @@ void menuCajero();
 
 Empleado nuevoEmpleado();
 Cliente nuevoCliente();
-Plato nuevoPlato();
+Plato nuevoPlato(int);
 Reserva nuevaReserva();
 
 void escribirArchivo(Empleado);
@@ -106,6 +106,10 @@ void mostrar(const char*);
 void gestionarEmpleados();
 void gestionarClientes();
 void gestionarMenu();
+void IngredienteNuevo();
+void AgregarReceta (int, int);
+void AniadirIngredientesReceta(int);
+void gestionarFacturas();
 void gestionarIngredientes();
 void gestionarReservas(int);
 
@@ -291,7 +295,7 @@ Cliente nuevoCliente(){
     return c;
 }
 
-Plato nuevoPlato(){
+Plato nuevoPlato(int x){
     ifstream platos;
     platos.open(ARCHIVO_MENU, ios::binary);
     vector<Plato> pl;
@@ -299,12 +303,18 @@ Plato nuevoPlato(){
     while(platos.read((char*)&p, sizeof(Plato)))
         pl.push_back(p);
     platos.close();
+    if(x==-1)
+        p.codigo = pl[pl.size()-1].codigo+1;
+    else
+        p.codigo = x;
+    cout << "\tIngrese el nombre del plato: ";
     p.codigo = pl[pl.size()-1].codigo+1;
     cout << "\t- Ingrese el nombre del plato: ";
     cin.ignore(256, '\n');
     cin.getline(p.nombre, 100);
     cout << "\t- Ingrese el precio del plato: ";
     cin >> p.precio;
+    AniadirIngredientesReceta(p.codigo);
     return p;
 }
 
@@ -668,7 +678,7 @@ void gestionarMenu() {
         switch(opcion){
             int codigo;
             case 1:
-                escribirArchivo(nuevoPlato());
+                escribirArchivo(nuevoPlato(-1));
                 cout << "\n>> Se ha añadido el plato." << endl;
                 break;
             case 2:
@@ -680,7 +690,7 @@ void gestionarMenu() {
             case 3:
                 cout << "\nIngrese el codigo del plato a modificar: ";
                 cin >> codigo;
-                modificarArchivo(codigo, nuevoPlato());
+                modificarArchivo(codigo, nuevoPlato(codigo));
                 cout << "\n>> Se ha modificado el plato." << endl;
                 break;
             case 4:
@@ -694,6 +704,98 @@ void gestionarMenu() {
         }  
     }
     while(true);
+}
+
+vector <Ingredientes> MostrarIngreDientes()
+{
+    ifstream archivo;
+    archivo.open(ARCHIVO_INGREDIENTES, ios::binary);
+
+    cout << "\n>> Lista de ingredientes: " << endl;
+
+    Ingredientes ing;
+    vector<Ingredientes> ingre;
+
+    while(archivo.read((char*)&ing, sizeof(Ingredientes)))
+    {
+        cout << setfill(' ') << "\n- Codigo: " << setw(6) << left << ing.codigoIngrediente;
+        cout << "Nombre: " << setw(22) << left << ing.nombre;
+        cout << "Cantidad: "<< setw(12) << left << ing.cantidad;
+        cout << "Precio: " << ing.precio << " BOB." << endl;
+        ingre.push_back(ing);
+    }
+    archivo.close();
+    return ingre;
+}
+void AniadirIngredientesReceta(int codigoPlato)
+{
+    int opcion;
+    cout<<"\t\t1. Ingrediente existente"<<endl;
+    cout<<"\t\t2. Ingrediente nuevo"<<endl;
+    cout<<"\t\t3. Volver al menu principal"<<endl;
+    cin>>opcion;
+    switch (opcion){
+        case 1:{
+            vector<Ingredientes> ingre = MostrarIngreDientes();
+            int codigoing = -1;
+            while(codigoing != 0){
+                cout<<"Ingrese el codigo del ingrediente a agregar al platillo (0 para salir): ";
+                cin>>codigoing;
+                if(codigoing==0)
+                    break;
+                AgregarReceta(codigoPlato, codigoing);
+            }
+            break;
+        }
+        case 2:
+        {
+            IngredienteNuevo();
+            vector<Ingredientes> ingre = MostrarIngreDientes();
+            AgregarReceta(codigoPlato, ingre[ingre.size()-1].codigoIngrediente);
+        }
+        case 3:
+            menuGerente();
+            break;
+        default:
+            cout<<"Opcion no valida"<<endl;
+    }
+}
+
+void IngredienteNuevo()
+{
+    ifstream archivo;
+    archivo.open(ARCHIVO_INGREDIENTES, ios::binary);
+    cout << "Lista de ingredientes: " << endl;
+    Ingredientes ing;
+    vector<Ingredientes> ingre;
+    while(archivo.read((char*)&ing, sizeof(Ingredientes)))
+        ingre.push_back(ing);
+    fflush(stdin);
+    cout << "Ingrese el nombre del ingrediente nuevo: ";
+    cin.getline(ing.nombre, 50);
+    cout << "Ingrese el precio del ingrediente nuevo: ";
+    cin >> ing.precio;
+    cout << "ingrese de cuantos ingredientes sera el pedido: ";
+    cin >> ing.cantidad;
+    ofstream aniadir;
+    aniadir.open(ARCHIVO_INGREDIENTES, ios::binary | ios::app);
+    ing.codigoIngrediente = ingre[ingre.size()-1].codigoIngrediente+1;
+    aniadir.write((char*)&ing, sizeof(Ingredientes));
+    aniadir.close();
+}
+void AgregarReceta (int codigoPlato, int codigoing)
+{
+    cout<<"Ingrese la cantidad del ingrediente que entra a la receta: ";
+    int can;
+    cin>>can;
+    ofstream recet;
+    recet.open(ARCHIVO_RECETAS, ios::binary | ios:: app);
+    Receta r;
+    r.codigoPlato = codigoPlato;
+    r.CodigoIngrediente = codigoing;
+    r.cantidad = can;
+    recet.write((char*)&r, sizeof(Receta));
+    recet.close();
 }
 
 void gestionarIngredientes()
@@ -771,25 +873,7 @@ void gestionarIngredientes()
         }
         case 2:
         {
-            ifstream archivo;
-            archivo.open(ARCHIVO_INGREDIENTES, ios::binary);
-            cout << "Lista de ingredientes: " << endl;
-            Ingredientes ing;
-            vector<Ingredientes> ingre;
-            while(archivo.read((char*)&ing, sizeof(Ingredientes)))
-                ingre.push_back(ing);
-            fflush(stdin);
-            cout << "Ingrese el nombre del ingrediente nuevo: ";
-            cin.getline(ing.nombre, 50);
-            cout << "Ingrese el precio del ingrediente nuevo: ";
-            cin >> ing.precio;
-            cout << "ingrese de cuantos ingredientes sera el pedido: ";
-            cin >> ing.cantidad;
-            ofstream aniadir;
-            aniadir.open(ARCHIVO_INGREDIENTES, ios::binary | ios::app);
-            ing.codigoIngrediente = ingre[ingre.size()-1].codigoIngrediente+1;
-            aniadir.write((char*)&ing, sizeof(Ingredientes));
-            aniadir.close();
+            IngredienteNuevo();
             break;
         }
         case 3:
@@ -1187,8 +1271,6 @@ void menuCliente(int x){
             cout << endl << p.codigo << ": " << setfill('.') << setw(60) << left << p.nombre << p.precio << endl;
         }
     }
-    
-
     lectura.close();
 }
 
