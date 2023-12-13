@@ -23,7 +23,7 @@ struct Cliente {
 
 struct Plato {
     int codigo;
-    char nombre[50];
+    char nombre[100];
     double precio;
 };
 

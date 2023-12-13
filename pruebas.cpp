@@ -3,7 +3,7 @@
 
 struct Plato {
     int codigo;
-    char nombre[50];
+    char nombre[100];
     float precio;
 };
 
