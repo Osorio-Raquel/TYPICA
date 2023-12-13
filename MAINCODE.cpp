@@ -307,8 +307,6 @@ Plato nuevoPlato(int x){
         p.codigo = pl[pl.size()-1].codigo+1;
     else
         p.codigo = x;
-    cout << "\tIngrese el nombre del plato: ";
-    p.codigo = pl[pl.size()-1].codigo+1;
     cout << "\t- Ingrese el nombre del plato: ";
     cin.ignore(256, '\n');
     cin.getline(p.nombre, 100);
