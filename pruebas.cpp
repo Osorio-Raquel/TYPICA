@@ -6,11 +6,18 @@ struct Plato {
     char nombre[100];
     float precio;
 };
+
 struct Ingredientes {
     int codigoIngrediente;
     char nombre[50];
     int cantidad;
     double precio;
+};
+
+struct Receta {
+    int codigoPlato;
+    int CodigoIngrediente;
+    int cantidad;
 };
 
 // Función para escribir los datos en el archivo
@@ -94,7 +101,10 @@ void escribirMenu() {
         {33, "Cordero", 44, 46.0},
         {34, "Hierbas", 53, 45.0},
         {35, "Pesto", 34, 20.0},
-        {37, "Gnocchi", 98, 16.0}
+        {36, "Pan", 100, 1.0},
+        {37, "Gnocchi", 98, 16.0},
+        {38, "Arroz", 150, 7.0},
+        {39, "Pato", 40, 40.0}
     };
     std::ofstream archivo1("ingredientes.bin", std::ios::binary);
 
@@ -106,6 +116,48 @@ void escribirMenu() {
     archivo1.write(reinterpret_cast<char*>(ingre), sizeof(ingre));
     archivo1.close();
     std::cout << "Archivo 'ingredientes.bin' creado correctamente." << std::endl;
+
+    Receta recetas [] = {{1, 1, 1}, {1, 2, 2}, {1, 9, 1},
+    {2, 3, 1}, {2, 4, 2}, {2, 38, 1},
+    {3, 5, 1}, {3, 6, 2}, {3, 7, 1},
+    {4, 8, 1}, {4, 9, 1}, {4, 10, 2},
+    {5, 10, 2}, {5, 11, 1},
+    {6, 12, 1}, {6, 13, 1}, {6, 14, 1}, {6, 16, 2},
+    {7, 5, 1}, {7, 12, 1}, {7, 14, 1},
+    {8, 38, 3}, {8, 3, 1}, {8, 15, 1}, {8, 20, 1}, {8, 20, 1}, {8, 15, 1},
+    {9, 21, 1}, {9, 2, 2}, {9, 13, 1},
+    {10, 19, 1}, {10, 13, 1}, {10, 14, 2}, {10, 36, 1},
+    {11, 38, 1}, {11, 15, 1}, {11, 20, 3}, {11, 25, 1},
+    {12, 24, 4}, {12, 12, 2}, {12, 16, 2},
+    {13, 17, 2}, {13, 32, 1},
+    {14, 18, 2}, {14, 22, 1},
+    {15, 8, 3}, {15, 1, 1}, {15, 13, 1},
+    {16, 15, 1}, {16, 20, 4},
+    {17, 39, 1}, {17, 32, 2},
+    {18, 33, 1}, {18, 34, 4},
+    {19, 5, 1}, {19, 38, 1},
+    {20, 38, 1}, {20, 3, 1}, {20, 14, 1},
+    {21, 37, 2}, {21, 35, 2},
+    {22, 15, 1}, {22, 22, 2},
+    {23, 25, 1}, {23, 14, 1},
+    {24, 3, 1}, {24, 26, 1}, {24, 27, 3},
+    {25, 8, 2}, {25, 28, 1},
+    {26, 5, 1}, {26, 29, 2},
+    {27, 8, 1}, {27, 30, 2}, {27, 31, 2},
+    {28, 5, 1}, {28, 32, 3},
+    {29, 38, 1}, {29, 23, 2}, {29, 12, 2},
+    {30, 1, 2}, {30, 15, 1}, {30, 20, 2}
+    };
+    std::ofstream archivo2("recetas.bin", std::ios::binary);
+
+    if (!archivo2.is_open()) {
+        std::cerr << "Error al abrir el archivo." << std::endl;
+        return;
+    }
+
+    archivo2.write(reinterpret_cast<char*>(recetas), sizeof(recetas));
+    archivo2.close();
+    std::cout << "Archivo 'irecetas.bin' creado correctamente." << std::endl;
 }
 
 // Función para leer y mostrar los datos del archivo
@@ -130,7 +182,7 @@ void leerMenu() {
 
 void leeringredientes()
 {
-    Ingredientes ingre [36];
+    Ingredientes ingre [39];
     std::ifstream archivo("ingredientes.bin", std::ios::binary);
 
     if (!archivo.is_open()) {
@@ -146,9 +198,27 @@ void leeringredientes()
         std::cout << "Codigo: " << plato.codigoIngrediente << ", Nombre: " << plato.nombre << ", Precio: " << plato.precio << " BOB Cantidad: " <<plato.cantidad << std::endl;
     }
 }
+void leerRecetas()
+{
+    Receta recetas [90];
+    std::ifstream archivo("recetas.bin", std::ios::binary);
+    if (!archivo.is_open()) {
+        std::cerr << "Error al abrir el archivo." << std::endl;
+        return;
+    }
+
+    archivo.read(reinterpret_cast<char*>(recetas), sizeof(recetas));
+    archivo.close();
+
+    std::cout << "Ingredinetes cargados desde 'recetas.bin':" << std::endl;
+    for (const auto& plato : recetas) {
+        std::cout << "Codigo Plato: " << plato.codigoPlato << ", Codigo Ingreciente: " << plato.CodigoIngrediente << " Cantidad: " <<plato.cantidad << std::endl;
+    }
+}
 int main() {
     escribirMenu();
     leerMenu();
     leeringredientes();
+    leerRecetas();
     return 0;
 }

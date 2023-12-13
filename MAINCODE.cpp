@@ -32,6 +32,13 @@ struct Ingredientes {
     int cantidad;
     double precio;
 };
+
+struct Receta {
+    int codigoPlato;
+    int CodigoIngrediente;
+    int cantidad;
+};
+
 struct Factura {
     int CI;
     char nombreCliente[50];
