@@ -131,7 +131,8 @@ int obtenerEnteroDesdeEntrada();
 // Función principal la bonita aaaaaaaaaaaaaaaaaaa
 int main() {
     //inicializarArchivos();
-    pantallaAcceso();
+    //pantallaAcceso();
+    obtenerEnteroDesdeEntrada();
     return 0;
 }
 
@@ -235,7 +236,7 @@ void menuGerente() {
 
         int opcion;
         cout << "\n\t--> ";
-        cin >> opcion;
+        opcion = obtenerEnteroDesdeEntrada();
 
         switch (opcion) {
             case 1:
@@ -276,7 +277,7 @@ void menuGerente() {
 Empleado nuevoEmpleado(){
     Empleado e;
     cout << "\n\t- Ingrese el CI del empleado: ";
-    cin >> e.CI;
+    e.CI = obtenerEnteroDesdeEntrada();
     cout << "\t- Ingrese el nombre del empleado: ";
     cin.ignore(256, '\n');
     cin.getline(e.nombre, 50);
@@ -291,7 +292,7 @@ Empleado nuevoEmpleado(){
 Cliente nuevoCliente(){
     Cliente c;
     cout << "\n\t- Ingrese el CI del cliente: ";
-    cin >> c.CI;
+    c.CI = obtenerEnteroDesdeEntrada();
     cout << "\t- Ingrese el nombre del cliente: ";
     cin.ignore(256, '\n');
     cin.getline(c.nombre, 50);
@@ -583,7 +584,7 @@ void gestionarEmpleados() {
 
         int opcion;
         cout << "\n\t-->  ";
-        cin >> opcion;
+        opcion = obtenerEnteroDesdeEntrada();
 
         switch(opcion){
             int ci;
@@ -629,7 +630,7 @@ void gestionarClientes() {
 
         int opcion;
         cout << "\n\t-->  ";
-        cin >> opcion;
+        opcion = obtenerEnteroDesdeEntrada();
 
         switch(opcion){
             int ci;
@@ -675,7 +676,7 @@ void gestionarMenu() {
 
         int opcion;
         cout << "\n\t-->  ";
-        cin >> opcion;
+        opcion = obtenerEnteroDesdeEntrada();
 
         switch(opcion){
             int codigo;
@@ -737,7 +738,7 @@ void AniadirIngredientesReceta(int codigoPlato)
     cout<<"\t\t1. Ingrediente existente."<<endl;
     cout<<"\t\t2. Ingrediente nuevo."<<endl;
     cout<<"\t\t3. Volver."<<endl;
-    cin>>opcion;
+    opcion = obtenerEnteroDesdeEntrada();
     switch (opcion){
         case 1:{
             vector<Ingredientes> ingre = MostrarIngreDientes();
@@ -813,7 +814,7 @@ void gestionarIngredientes()
 
     int opcion;
     cout << "\n\t-->  ";
-    cin >> opcion;
+    opcion = obtenerEnteroDesdeEntrada();
     switch(opcion)
     {
         case 1:
@@ -920,7 +921,7 @@ void gestionarReservas(int x){
 
         int opcion;
         cout << "\n\t--> ";
-        cin >> opcion;
+        opcion = obtenerEnteroDesdeEntrada();
 
         switch(opcion){
             int CI;
@@ -1075,7 +1076,7 @@ double calcularTotal(vector<Plato> platos){
 Factura nuevaFactura(){
     Factura f;
     cout << "\n\t- Ingrese el CI del cliente (0: sin datos): ";
-    cin >> f.CI;
+    f.CI = obtenerEnteroDesdeEntrada();
 
     if(f.CI != 0){
         bool bandera = verificarCliente(f.CI);
@@ -1109,7 +1110,7 @@ Factura nuevaFactura(){
     int codigo = -1;
     while(codigo != 0){
         cout << "\t- Ingrese el codigo del plato (0: finalizar): ";
-        cin >> codigo;
+        codigo = obtenerEnteroDesdeEntrada();
 
         bool bandera = verificarCodigo(codigo);
 
@@ -1194,7 +1195,7 @@ void imprimirFactura(Factura f){
 Reserva nuevaReserva(){
     Reserva r;
     cout << "\n\tIngrese el CI del cliente: ";
-    cin >> r.CI;
+    r.CI = obtenerEnteroDesdeEntrada();
 
     bool bandera = verificarCliente(r.CI);
     
@@ -1232,7 +1233,7 @@ void menuCajero(){
 
         int opcion;
         cout << "\n\tSeleccione una opcion: ";
-        cin >> opcion;
+        opcion = obtenerEnteroDesdeEntrada();
 
         switch(opcion){
             case 1:
@@ -1283,14 +1284,12 @@ int obtenerEnteroDesdeEntrada() {
     int entero;
 
     while (true) {
-        getline(std::cin, entrada);
+        cin >> entrada;
         istringstream iss(entrada);
         if (iss >> entero && iss.eof()) {
             break;
         } else {
-            cout << "Error. Por favor, ingresa un valor entero válido." << std::endl;
-            cin.clear();
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            cout << "Error. Por favor, ingresa un valor entero válido." << endl;
         }
     }
     return entero;
