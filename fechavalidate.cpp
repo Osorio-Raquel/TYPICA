@@ -1,21 +1,39 @@
+#include <iostream>
+#include <sstream>
+
+using namespace std;
+
+struct Date {
+    int day, month, year;
+};
+
 bool isLeapYear(int year) {
     return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
 }
 
-bool validateDate(const P& p) { // para la estructura
-    int day, month, year;
-    sscanf(p.f, "%d/%d/%d", &day, &month, &year);
+bool validateDate(const string& a) {
+    Date date;
 
-    if (month < 1 || month > 12) {
-        cout << "Error: Mes no válido." << endl;
+    istringstream b(a);
+    char d;
+
+    b >> date.day >> d >> date.month >> d >> date.year;
+
+    if (b.fail() || b.bad()) {
+        cout << "Formato no valido." << endl;
         return false;
     }
 
     int daysInMonth;
 
-    switch (month) {
+    if (date.month < 1 || date.month > 12) {
+        cout << "Mes no valido" << endl;
+        return false;
+    }
+
+    switch (date.month) {
         case 2:
-            daysInMonth = isLeapYear(year) ? 29 : 28;
+            daysInMonth = isLeapYear(date.year) ? 29 : 28;
             break;
         case 4:
         case 6:
@@ -28,10 +46,22 @@ bool validateDate(const P& p) { // para la estructura
             break;
     }
 
-    if (day < 1 || day > daysInMonth) {
-        cout << "Error: Día no válido para el mes ingresado." << endl;
+    if (date.day < 1 || date.day > daysInMonth) {
+        cout << "Dia no valido para el mes ingresado" << endl;
         return false;
     }
 
     return true;
+}
+
+int main() {
+    string a = "45/05/2023";
+
+    if (validateDate(a)) {
+        cout << "Fecha valida" << endl;
+    } else {
+        cout << "Fecha no valida" << endl;
+    }
+
+    return 0;
 }
