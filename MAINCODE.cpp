@@ -62,12 +62,17 @@ struct Factura {
 struct Reserva{
     int CI;
     char nombreCliente[50];
-    char fecha[10];
+    char fecha[11];
 };
 
 // Estructura para almacenar los datos de las finanzas
 struct Finanzas{
     long double totalVentas = 0.0, gastosIngredientes = 0.0;
+};
+
+// Estrcutura para almacenar datos de fechas
+struct Date {
+    int day, month, year;
 };
 
 // Datos de los usuarios y contraseñas del gerente y el cajero
@@ -97,10 +102,10 @@ void pantallaAcceso();
 void menuGerente();
 void menuCajero();
 
-Empleado nuevoEmpleado();
-Cliente nuevoCliente();
+Empleado nuevoEmpleado(int, int);
+Cliente nuevoCliente(int, int);
 Plato nuevoPlato(int);
-Reserva nuevaReserva();
+Reserva nuevaReserva(int, int);
 
 void escribirArchivo(Empleado);
 void escribirArchivo(Cliente);
@@ -108,12 +113,12 @@ void escribirArchivo(Plato);
 void escribirArchivo(Factura);
 void escribirArchivo(Reserva);
 
-void eliminarDeArchivo(const char*, int);
+void eliminarDeArchivo(const char*, int, char[11]);
 void modificarArchivo(int, Empleado);
 void modificarArchivo(int, Cliente);
 void modificarArchivo(int, Plato);
-void modificarArchivo(int, Reserva);
-void mostrar(const char*);
+void modificarArchivo(int, char[11], Reserva);
+void mostrar(const char*, int);
 
 void gestionarEmpleados();
 void gestionarClientes();
@@ -124,8 +129,14 @@ void AniadirIngredientesReceta(int);
 void gestionarIngredientes();
 void gestionarReservas(int);
 
+bool verificarEmpleado(int);
 bool verificarCodigo(int);
 bool verificarCliente(int);
+bool verificarIngrediente(int);
+bool verificarReserva(int, const char*);
+bool isLeapYear(int);
+bool validateDate(const string&);
+
 Cliente nombreCliente(int);
 Plato devolverPlato(int);
 void ActualizarInredientes(int);
@@ -275,29 +286,48 @@ void menuGerente() {
 }
 
 // Permite ingresar la información de un empleado 
-Empleado nuevoEmpleado(){
+Empleado nuevoEmpleado(int x, int ci = 0){
     Empleado e;
-    cout << "\n\t- Ingrese el CI del empleado: ";
-    e.CI = obtenerEnteroDesdeEntrada();
-    cout << "\t- Ingrese el nombre del empleado: ";
-    cin.ignore(256, '\n');
-    cin.getline(e.nombre, 50);
-    cout << "\t- Ingrese el puesto del empleado: ";
-    cin.getline(e.puesto, 30);
-    cout << "\t- Ingrese el sueldo del empleado: ";
-    e.sueldo = obtenerDoubleDesdeEntrada();
-
+    if(x == 0){
+        cout << "\n\t- Ingrese el CI del empleado: ";
+        e.CI = obtenerEnteroDesdeEntrada();
+        cout << "\t- Ingrese el nombre del empleado: ";
+        cin.ignore(256, '\n');
+        cin.getline(e.nombre, 50);
+        cout << "\t- Ingrese el puesto del empleado: ";
+        cin.getline(e.puesto, 30);
+        cout << "\t- Ingrese el sueldo del empleado: ";
+        e.sueldo = obtenerDoubleDesdeEntrada();
+    }
+    else if(x == 1){
+        e.CI = ci;
+        cout << "\t- Ingrese el nombre del empleado: ";
+        cin.ignore(256, '\n');
+        cin.getline(e.nombre, 50);
+        cout << "\t- Ingrese el puesto del empleado: ";
+        cin.getline(e.puesto, 30);
+        cout << "\t- Ingrese el sueldo del empleado: ";
+        e.sueldo = obtenerDoubleDesdeEntrada();
+    }
+    
     return e;
 }
 
 // Permite ingresar la información de un cliente
-Cliente nuevoCliente(){
+Cliente nuevoCliente(int x, int ci = 0){
     Cliente c;
-    cout << "\n\t- Ingrese el CI del cliente: ";
-    c.CI = obtenerEnteroDesdeEntrada();
-    cout << "\t- Ingrese el nombre del cliente: ";
-    cin.ignore(256, '\n');
-    cin.getline(c.nombre, 50);
+    if(x == 0){
+        cout << "\n\t- Ingrese el CI del cliente: ";
+        c.CI = obtenerEnteroDesdeEntrada();
+        cout << "\t- Ingrese el nombre del cliente: ";
+        cin.ignore(256, '\n');
+        cin.getline(c.nombre, 50);
+    }else if(x == 1){
+        c.CI = ci;
+        cout << "\t- Ingrese el nombre del cliente: ";
+        cin.ignore(256, '\n');
+        cin.getline(c.nombre, 50);
+    }
 
     return c;
 }
@@ -390,7 +420,7 @@ void escribirArchivo(Reserva r){
 }
 
 // Elimina los datos seleccionados del archivo seleccionado
-void eliminarDeArchivo(const char* archivo, int x){
+void eliminarDeArchivo(const char* archivo, int x, char fecha[11] = {}){
     ifstream lectura;
     lectura.open(archivo, ios::binary);
 
@@ -421,7 +451,7 @@ void eliminarDeArchivo(const char* archivo, int x){
     }else if(archivo == ARCHIVO_RESERVA){
         Reserva r;
         while(lectura.read((char*)&r, sizeof(Reserva))){
-            if(x != r.CI){
+            if(x != r.CI || strcmp(fecha, r.fecha) != 0){
                 escritura.write((char*)&r, sizeof(Reserva));
             }
         }
@@ -513,7 +543,7 @@ void modificarArchivo(int x, Plato plato){
 }
 
 // Modifica los datos de una factura  del archivo de reservas
-void modificarArchivo(int x, Reserva reserva){
+void modificarArchivo(int x, char fecha[11], Reserva reserva){
     ifstream lectura;
     lectura.open(ARCHIVO_RESERVA, ios::binary);
 
@@ -523,11 +553,11 @@ void modificarArchivo(int x, Reserva reserva){
     Reserva r;
 
     while(lectura.read((char*)&r, sizeof(Reserva))){
-        if(x != r.CI){
-            escritura.write((char*)&r, sizeof(Reserva));
+        if(x == r.CI && strcmp(fecha, r.fecha) == 0){
+            escritura.write((char*)&reserva, sizeof(Reserva));
         }
         else{
-            escritura.write((char*)&reserva, sizeof(Reserva));
+            escritura.write((char*)&r, sizeof(Reserva));
         }
     }
 
@@ -539,7 +569,7 @@ void modificarArchivo(int x, Reserva reserva){
 }
 
 // Muestra los datos de un archivo seleccionado
-void mostrar(const char* archivo){
+void mostrar(const char* archivo, int ci = 0){
     ifstream lectura;
     lectura.open(archivo, ios::binary);
     
@@ -569,13 +599,26 @@ void mostrar(const char* archivo){
                 cout << "\tPrecio: " << p.precio << endl;
             }
         }else if(archivo == ARCHIVO_RESERVA){
-            Reserva r;
-            cout << "\n--> Lista de reservas:" << endl;
-            while(lectura.read((char*)&r, sizeof(Reserva))){
-                cout << "\n\tCarnet de identidad: " << r.CI << endl;
-                cout << "\tNombre: " << r.nombreCliente << endl;
-                cout << "\tFecha: " << r.fecha << endl;
+            if(ci == 0){
+                Reserva r;
+                cout << "\n--> Lista de reservas:" << endl;
+                while(lectura.read((char*)&r, sizeof(Reserva))){
+                    cout << "\n\tCarnet de identidad: " << r.CI << endl;
+                    cout << "\tNombre: " << r.nombreCliente << endl;
+                    cout << "\tFecha: " << r.fecha << endl;
+                }
+            }else{
+                Reserva r;
+                cout << "\n--> Lista de reservas para el cliente con el CI " << ci << ":" << endl;
+                while(lectura.read((char*)&r, sizeof(Reserva))){
+                    if(ci == r.CI){
+                        cout << "\n\tCarnet de identidad: " << r.CI << endl;
+                        cout << "\tNombre: " << r.nombreCliente << endl;
+                        cout << "\tFecha: " << r.fecha << endl;
+                    }
+                }
             }
+            
         }
     }
     else{
@@ -602,31 +645,63 @@ void gestionarEmpleados() {
         opcion = obtenerEnteroDesdeEntrada();
 
         switch(opcion){
-            int ci;
+            Empleado e;
+            bool flag;
             case 1:
-                escribirArchivo(nuevoEmpleado());
-                cout << "\n>> Se ha añadido al empleado." << endl << endl;
+            {
+                cout << "\n\t- Ingrese el CI del empleado: ";
+                e.CI = obtenerEnteroDesdeEntrada();
+                flag = verificarEmpleado(e.CI);
+                if(!flag){
+                    escribirArchivo(nuevoEmpleado(1, e.CI));
+                    cout << "\n>> Se ha añadido al empleado." << endl << endl;
+                }
+                else{
+                    cout << "\n>> El empleado con el CI " << e.CI << " ya ha sido registrado." << endl << endl;
+                }
+                
                 system("pause");
                 break;
+            }
             case 2:
+            {
                 cout << "\nIngrese el CI del empleado a eliminar: ";
-                cin >> ci;
-                eliminarDeArchivo(ARCHIVO_EMPLEADOS, ci);
-                cout << "\n>> Se ha eliminado al empleado." << endl << endl;
+                e.CI = obtenerEnteroDesdeEntrada();
+                flag = verificarEmpleado(e.CI);
+                if(flag){
+                    eliminarDeArchivo(ARCHIVO_EMPLEADOS, e.CI);
+                    cout << "\n>> Se ha eliminado al empleado." << endl << endl;
+                }
+                else{
+                    cout << "\n>> El empleado con el CI " << e.CI << " no ha sido registrado." << endl << endl;
+                }
+                
                 system("pause");
                 break;
+            }
             case 3:
+            {
                 cout << "\nIngrese el CI del empleado a modificar: ";
-                cin >> ci;
-                modificarArchivo(ci, nuevoEmpleado());
-                cout << "\n>> Se ha modificado al empleado." << endl << endl;
+                e.CI = obtenerEnteroDesdeEntrada();
+                flag = verificarEmpleado(e.CI);
+                if(flag){
+                    modificarArchivo(e.CI, nuevoEmpleado(0));
+                    cout << "\n>> Se ha modificado al empleado." << endl << endl;
+                }
+                else{
+                    cout << "\n>> El empleado con el CI " << e.CI << " no ha sido registrado." << endl << endl;
+                }
+                
                 system("pause");
                 break;
+            }
             case 4:
+            {
                 mostrar(ARCHIVO_EMPLEADOS);
                 cout << endl << endl;
                 system("pause");
                 break;
+            }
             case 5:
                 menuGerente();
             default:
@@ -654,26 +729,56 @@ void gestionarClientes() {
         opcion = obtenerEnteroDesdeEntrada();
 
         switch(opcion){
-            int ci;
+            Cliente c;
+            bool flag;
             case 1:
-                escribirArchivo(nuevoCliente());
-                cout << "\n>> Se ha añadido al cliente" << endl << endl;
+            {
+                cout << "\n\t- Ingrese el CI del cliente: ";
+                c.CI = obtenerEnteroDesdeEntrada();
+                flag =  verificarCliente(c.CI);
+                if(!flag){
+                    escribirArchivo(nuevoCliente(1, c.CI));
+                    cout << "\n>> Se ha añadido al cliente" << endl << endl;
+                }
+                else{
+                    cout << "\n>> El cliente con el CI " << c.CI << " ya ha sido registrado." << endl << endl;
+                }
+                
                 system("pause");
                 break;
+            }
             case 2:
+            {
                 cout << "\nIngrese el CI del cliente a eliminar: ";
-                cin >> ci;
-                eliminarDeArchivo(ARCHIVO_CLIENTES, ci);
-                cout << "\n>> Se ha eliminado al cliente." << endl << endl;
+                c.CI = obtenerEnteroDesdeEntrada();
+                flag =  verificarCliente(c.CI);
+                if(flag){
+                    eliminarDeArchivo(ARCHIVO_CLIENTES, c.CI);
+                    cout << "\n>> Se ha eliminado al cliente." << endl << endl;
+                }
+                else{
+                    cout << "\n>> El cliente con el CI " << c.CI << " no ha sido registrado." << endl << endl;
+                }
+                
                 system("pause");
                 break;
+            }
             case 3:
+            {
                 cout << "\nIngrese el CI del cliente a modificar: ";
-                cin >> ci;
-                modificarArchivo(ci, nuevoCliente());
-                cout << "\n>> Se ha modificado al cliente." << endl << endl;
+                c.CI = obtenerEnteroDesdeEntrada();
+                flag =  verificarCliente(c.CI);
+                if(flag){
+                    modificarArchivo(c.CI, nuevoCliente(0));
+                    cout << "\n>> Se ha modificado al cliente." << endl << endl;
+                }
+                else{
+                    cout << "\n>> El cliente con el CI " << c.CI << " no ha sido registrado." << endl << endl;
+                }
+                
                 system("pause");
                 break;
+            }
             case 4:
                 mostrar(ARCHIVO_CLIENTES);
                 cout << endl << endl;
@@ -706,24 +811,39 @@ void gestionarMenu() {
         opcion = obtenerEnteroDesdeEntrada();
 
         switch(opcion){
-            int codigo;
+            Plato p;
+            bool flag;
             case 1:
                 escribirArchivo(nuevoPlato(-1));
                 cout << "\n>> Se ha añadido el plato." << endl << endl;
                 system("pause");
                 break;
             case 2:
-                cout << "\nIngrese el codigo del plato a eliminar: ";
-                cin >> codigo;
-                eliminarDeArchivo(ARCHIVO_MENU, codigo);
-                cout << "\n>> Se ha eliminado el plato." << endl << endl;
+                cout << "\n\t- Ingrese el codigo del plato a eliminar: ";
+                p.codigo = obtenerEnteroDesdeEntrada();
+                flag =  verificarCodigo(p.codigo);
+                if(flag){
+                    eliminarDeArchivo(ARCHIVO_MENU, p.codigo);
+                    cout << "\n>> Se ha eliminado el plato." << endl << endl;
+                }
+                else{
+                    cout << "\n>> El plato con el código " << p.codigo << " no ha sido registrado." << endl << endl;
+                }
+                
                 system("pause");
                 break;
             case 3:
-                cout << "\nIngrese el codigo del plato a modificar: ";
-                cin >> codigo;
-                modificarArchivo(codigo, nuevoPlato(codigo));
-                cout << "\n>> Se ha modificado el plato." << endl << endl;
+                cout << "\n\t- Ingrese el codigo del plato a modificar: ";
+                p.codigo = obtenerEnteroDesdeEntrada();
+                flag =  verificarCodigo(p.codigo);
+                if(flag){
+                    modificarArchivo(p.codigo, nuevoPlato(p.codigo));
+                    cout << "\n>> Se ha modificado el plato." << endl << endl;
+                }
+                else{
+                    cout << "\n>> El plato con el código " << p.codigo << " no ha sido registrado." << endl << endl;
+                }
+                
                 system("pause");
                 break;
             case 4:
@@ -768,18 +888,18 @@ vector <Ingredientes> MostrarIngreDientes()
 void AniadirIngredientesReceta(int codigoPlato)
 {
     int opcion;
-    cout<<"\tANIADIR INGREDIENTES A LAS RECETAS"<<endl;
-    cout<<"\t==================================="<<endl;
-    cout<<"\t\t1. Ingrediente existente."<<endl;
-    cout<<"\t\t2. Ingrediente nuevo."<<endl;
-    cout<<"\t\t3. Volver."<<endl;
+    cout<<"\nAÑADIR INGREDIENTES A LA RECETA"<<endl;
+    cout<<"==================================="<<endl;
+    cout<<"\n\t1. Ingrediente existente."<<endl;
+    cout<<"\t2. Ingrediente nuevo."<<endl;
+    cout<<"\t3. Volver."<<endl;
     opcion = obtenerEnteroDesdeEntrada();
     switch (opcion){
         case 1:{
             vector<Ingredientes> ingre = MostrarIngreDientes();
             int codigoing = -1;
             while(codigoing != 0){
-                cout<<"Ingrese el codigo del ingrediente a agregar al platillo (0 para salir): ";
+                cout<<"\n- Ingrese el codigo del ingrediente a agregar al platillo (0 para salir): ";
                 codigoing = obtenerEnteroDesdeEntrada();
                 if(codigoing==0)
                     break;
@@ -797,7 +917,7 @@ void AniadirIngredientesReceta(int codigoPlato)
             gestionarMenu();
             break;
         default:
-            cout<<"Opcion no valida"<<endl;
+            cout<<"\n>> Intente de nuevo."<<endl;
     }
 }
 
@@ -878,44 +998,49 @@ void gestionarIngredientes()
                 }
                 archivo.close();
 
-                cout << "\n>> Ingrese el codigo de que ingrediente desea hacer el pedido: ";
+                cout << "\n\t- Ingrese el codigo de que ingrediente desea hacer el pedido: ";
                 int codigoing;
                 codigoing = obtenerEnteroDesdeEntrada();
+                bool flag = verificarIngrediente(codigoing);
+                
+                if(flag){
+                    cout << "\n\t- Ingrese de cuantos ingredientes sera el pedido: ";
+                    int cantidad;
+                    cantidad = obtenerEnteroDesdeEntrada();
 
-                cout << "\n>> Ingrese de cuantos ingredientes sera el pedido: ";
-                int cantidad;
-                cantidad = obtenerEnteroDesdeEntrada();
+                    double totalCompra = 0;
 
-                double totalCompra = 0;
-
-                for(unsigned int i=0; i < ingre.size(); i++)
-                {
-                    if(ingre[i].codigoIngrediente == codigoing){
-                        ingre[i].cantidad += cantidad;
-                        totalCompra = ingre[i].precio * cantidad;
-                        cout << "\n>> Se han comprado " << cantidad << " " << ingre[i].nombre << "s a " << totalCompra << " BOB." << endl;
+                    for(unsigned int i=0; i < ingre.size(); i++)
+                    {
+                        if(ingre[i].codigoIngrediente == codigoing){
+                            ingre[i].cantidad += cantidad;
+                            totalCompra = ingre[i].precio * cantidad;
+                            cout << "\n>> Se han comprado " << cantidad << " " << ingre[i].nombre << "s a " << totalCompra << " BOB." << endl;
+                        }
                     }
+
+                    ofstream sobreescribir;
+                    sobreescribir.open(ARCHIVO_INGREDIENTES, ios::binary);
+                    for(unsigned int i=0; i<ingre.size(); i++)
+                    sobreescribir.write((char*)&ingre[i], sizeof(Ingredientes));
+                    sobreescribir.close();
+
+                    ifstream lectura;
+                    ofstream escritura;
+                    Finanzas fin;
+                    lectura.open(ARCHIVO_FINANZAS, ios::binary);
+                    escritura.open(ARCHIVO_TEMPORAL, ios::binary);
+                    lectura.read((char*)&fin, sizeof(Finanzas));
+                    fin.gastosIngredientes += totalCompra;
+                    escritura.write((char*)&fin, sizeof(Finanzas));
+                    lectura.close();
+                    escritura.close();
+                    remove(ARCHIVO_FINANZAS);
+                    rename(ARCHIVO_TEMPORAL, ARCHIVO_FINANZAS);
                 }
-
-                ofstream sobreescribir;
-                sobreescribir.open(ARCHIVO_INGREDIENTES, ios::binary);
-                for(unsigned int i=0; i<ingre.size(); i++)
-                sobreescribir.write((char*)&ingre[i], sizeof(Ingredientes));
-                sobreescribir.close();
-
-                ifstream lectura;
-                ofstream escritura;
-                Finanzas fin;
-                lectura.open(ARCHIVO_FINANZAS, ios::binary);
-                escritura.open(ARCHIVO_TEMPORAL, ios::binary);
-                lectura.read((char*)&fin, sizeof(Finanzas));
-                fin.gastosIngredientes += totalCompra;
-                escritura.write((char*)&fin, sizeof(Finanzas));
-                lectura.close();
-                escritura.close();
-                remove(ARCHIVO_FINANZAS);
-                rename(ARCHIVO_TEMPORAL, ARCHIVO_FINANZAS);
-
+                else{
+                    cout << "\n>> El plato con el código " << codigoing << " no ha sido registrado." << endl << endl;
+                }
                 cout << endl;
                 system("pause");
                 break;
@@ -976,26 +1101,64 @@ void gestionarReservas(int x){
         opcion = obtenerEnteroDesdeEntrada();
 
         switch(opcion){
-            int CI;
+            Reserva r;
+            bool flag;
             case 1:
-                escribirArchivo(nuevaReserva());
+                escribirArchivo(nuevaReserva(0, 0));
                 cout << "\n>> Se ha añadido la reserva." << endl << endl;
                 system("pause");
                 break;
             case 2:
+            {
                 cout << "\nIngrese el CI de la reserva del cliente a eliminar: ";
-                cin >> CI;
-                eliminarDeArchivo(ARCHIVO_RESERVA, CI);
-                cout << "\n>> Se ha eliminado la reserva." << endl << endl;
+                r.CI = obtenerEnteroDesdeEntrada();
+                flag = verificarReserva(r.CI, ARCHIVO_RESERVA);
+                if(flag){
+                    mostrar(ARCHIVO_RESERVA, r.CI);
+                    cin.ignore(256, '\n');
+                    do{
+                        cout << "\n\t- Ingrese la fecha de la reserva a eliminar (dd/mm/yyyy): ";
+                        cin.getline(r.fecha, 11);
+                        flag = verificarReserva(r.CI, r.fecha);
+                        if(flag){
+                            eliminarDeArchivo(ARCHIVO_RESERVA, r.CI, r.fecha);
+                            cout << "\n>> Se ha eliminado la reserva." << endl << endl;
+                            break;
+                        }else{
+                            cout << "\n>> El cliente no tiene una reserva en la fecha ingresada." << endl;
+                        }
+                    }while(!flag);
+                }else{
+                    cout << "El cliente con el CI " << r.CI << " no tiene reservas." << endl << endl;
+                }
+                
                 system("pause");
                 break;
+            }
             case 3:
+            {
                 cout << "\nIngrese el CI de la reserva del cliente a modificar: ";
-                cin >> CI;
-                modificarArchivo(CI, nuevaReserva());
-                cout << "\n>> Se ha modificado la reserva." << endl << endl;
+                r.CI = obtenerEnteroDesdeEntrada();
+                flag = verificarReserva(r.CI, ARCHIVO_RESERVA);
+                if(flag){
+                    mostrar(ARCHIVO_RESERVA, r.CI);
+                    cout << "\n\t- Ingrese la fecha de la reserva a modificar (dd/mm/yyyy): ";
+                    cin.ignore(256, '\n');
+                    cin.getline(r.fecha, 11);
+                    flag = verificarReserva(r.CI, r.fecha);
+                    if(flag){
+                        modificarArchivo(r.CI, r.fecha, nuevaReserva(0, 0));
+                        cout << "\n>> Se ha modificado la reserva." << endl << endl;
+                    }else{
+                        cout << "\n>> El cliente no tiene una reserva en la fecha ingresada." << endl << endl;
+                    }
+                }else{
+                    cout << "El cliente con el CI " << r.CI << " no tiene reservas." << endl << endl;
+                }
+                
                 system("pause");
                 break;
+            }
             case 4:
                 mostrar(ARCHIVO_RESERVA);
                 cout << endl << endl;
@@ -1034,6 +1197,23 @@ Cliente nombreCliente(int ci){
     return c;
 }
 
+// Verifica si el empleado ha sido registrado en el archivo de empleados
+bool verificarEmpleado(int ci){
+    ifstream lectura;
+    lectura.open(ARCHIVO_EMPLEADOS, ios::binary);
+
+    Empleado e;
+
+    while(lectura.read((char*)&e, sizeof(Empleado))){
+        if(ci == e.CI){
+            lectura.close();
+            return true;
+        }
+    }
+    lectura.close();
+    return false;
+}
+
 // Verifica si el cliente ha sido registrado en el archivo de clientes
 bool verificarCliente(int ci){
     ifstream lectura;
@@ -1066,6 +1246,97 @@ bool verificarCodigo(int codigo){
     }
     lectura.close();
     return false;
+}
+
+// Verifica si el codigo de un ingrediente ha sido registrado en el archivo de ingredientes
+bool verificarIngrediente(int codigo){
+    ifstream lectura;
+    lectura.open(ARCHIVO_INGREDIENTES, ios::binary);
+
+    Ingredientes i;
+    while(lectura.read((char*)&i, sizeof(Ingredientes))){
+        if(codigo == i.codigoIngrediente){
+            lectura.close();
+            return true;
+        }
+    }
+    lectura.close();
+    return false;
+}
+
+// Verifica si el codigo de un ingrediente ha sido registrado en el archivo de ingredientes
+bool verificarReserva(int ci, const char* fecha = ARCHIVO_RESERVA){
+    ifstream lectura;
+    lectura.open(ARCHIVO_RESERVA, ios::binary);
+
+    Reserva r;
+    if(fecha == ARCHIVO_RESERVA){
+        while(lectura.read((char*)&r, sizeof(Reserva))){
+            if(ci == r.CI){
+                lectura.close();
+                return true;
+            }
+        }
+    }else{
+        while(lectura.read((char*)&r, sizeof(Reserva))){
+            if(ci == r.CI && strcmp(fecha, r.fecha) == 0){
+                lectura.close();
+                return true;
+            }
+        }
+    }
+    
+    lectura.close();
+    return false;
+}
+
+// Verifica si el año es bisiesto
+bool isLeapYear(int year) {
+    return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+}
+
+// Valida la fecha
+bool validateDate(const string& a) {
+    Date date;
+
+    istringstream b(a);
+    char d;
+
+    b >> date.day >> d >> date.month >> d >> date.year;
+
+    if (b.fail() || b.bad()) {
+        cout << "\n>> Formato no valido." << endl << endl;
+        return false;
+    }
+
+    int daysInMonth;
+
+    if (date.month < 1 || date.month > 12) {
+        cout << "\n>> Mes no valido" << endl << endl;
+        return false;
+    }
+
+    switch (date.month) {
+        case 2:
+            daysInMonth = isLeapYear(date.year) ? 29 : 28;
+            break;
+        case 4:
+        case 6:
+        case 9:
+        case 11:
+            daysInMonth = 30;
+            break;
+        default:
+            daysInMonth = 31;
+            break;
+    }
+
+    if (date.day < 1 || date.day > daysInMonth) {
+        cout << "\n>> Dia no valido para el mes ingresado" << endl << endl;
+        return false;
+    }
+
+    return true;
 }
 
 // Devuelve la estructura de un plato a partir de su código
@@ -1262,33 +1533,83 @@ void imprimirFactura(Factura f){
 }
 
 // Llena los datos de una reserva
-Reserva nuevaReserva(){
+Reserva nuevaReserva(int x, int ci = 0){
     Reserva r;
-    cout << "\n\tIngrese el CI del cliente: ";
-    r.CI = obtenerEnteroDesdeEntrada();
+    bool flag1, flag2;
+    if(x == 0){
+        cout << "\n\t- Ingrese el CI del cliente: ";
+        r.CI = obtenerEnteroDesdeEntrada();
 
-    bool bandera = verificarCliente(r.CI);
-    
-    if(bandera){
-        cout << "\n>> El cliente ya ha sido registrado. Autocompletando informacion." << endl << endl;
-        Cliente c = nombreCliente(r.CI);
-        strcpy(r.nombreCliente, c.nombre);
-    }
-    else{
-        cout << "\tIngrese el nombre del cliente: ";
+        bool bandera = verificarCliente(r.CI);
+        
+        if(bandera){
+            cout << "\n>> El cliente ya ha sido registrado. Autocompletando informacion." << endl << endl;
+            Cliente c = nombreCliente(r.CI);
+            strcpy(r.nombreCliente, c.nombre);
+        }
+        else{
+            cout << "\t- Ingrese el nombre del cliente: ";
+            cin.ignore(256, '\n');
+            cin.getline(r.nombreCliente, 50);
+
+            Cliente c;
+            c.CI = r.CI;
+            strcpy(c.nombre, r.nombreCliente);
+            escribirArchivo(c);
+        }
+
         cin.ignore(256, '\n');
-        cin.getline(r.nombreCliente, 50);
+        do{
+            cout << "\t- Ingrese la fecha de la reserva (dd/mm/yyyy): ";
+            cin.getline(r.fecha, 11);
+            flag1 = validateDate(r.fecha);
+            if(flag1){
+                flag2 = verificarReserva(r.CI, r.fecha);
+                if(flag2){
+                    cout << "\n>> El cliente ya tiene una reserva en la fecha ingresada." << endl << endl;
+                }
+            }
+        }
+        while(flag2);
 
-        Cliente c;
-        c.CI = r.CI;
-        strcpy(c.nombre, r.nombreCliente);
-        escribirArchivo(c);
+    }else if(x == 1){
+        r.CI = ci;
+
+        bool bandera = verificarCliente(r.CI);
+        
+        if(bandera){
+            cout << "\n>> El cliente ya ha sido registrado. Autocompletando informacion." << endl << endl;
+            Cliente c = nombreCliente(r.CI);
+            strcpy(r.nombreCliente, c.nombre);
+        }
+        else{
+            cout << "\t- Ingrese el nombre del cliente: ";
+            cin.ignore(256, '\n');
+            cin.getline(r.nombreCliente, 50);
+
+            Cliente c;
+            c.CI = r.CI;
+            strcpy(c.nombre, r.nombreCliente);
+            escribirArchivo(c);
+        }
+        
+        cin.ignore(256, '\n');
+        do{
+            cout << "\t- Ingrese la fecha de la reserva (dd/mm/yyyy): ";
+            cin.getline(r.fecha, 11);
+            flag1 = validateDate(r.fecha);
+            if(flag1){
+                flag2 = verificarReserva(r.CI, r.fecha);
+                if(flag2){
+                    cout << "\n>> El cliente ya tiene una reserva en la fecha ingresada." << endl << endl;
+                }
+            }else{
+                cout << "\n>> Formato de fecha inválido." << endl << endl;
+            }
+        }
+        while(flag2);
     }
-
     
-    cout << "\tIngrese la fecha de la reserva (dd/mm/yyyy): ";
-    cin >> r.fecha;
-
     return r;
 }
 
@@ -1371,6 +1692,7 @@ int obtenerEnteroDesdeEntrada()
             break;
         } else {
             cout << "\n>> Error. Por favor, ingresa un valor entero válido." << endl;
+            cout << "\n\t--> ";
         }
     }
 return entero;
@@ -1382,13 +1704,13 @@ double obtenerDoubleDesdeEntrada()
     string entrada;
     double valorDouble;
     while (true) {
-        cout << "\n>> Ingresa un valor double: ";
-        getline(cin, entrada);
+        cin >> entrada;
         istringstream iss(entrada);
         if (iss >> valorDouble && iss.eof()) {
             break;
         } else {
             cerr << "\n>> Error. Por favor, ingresa un valor double válido." << endl;
+            cout << "\n\t--> ";
         }
     }
     return valorDouble;
