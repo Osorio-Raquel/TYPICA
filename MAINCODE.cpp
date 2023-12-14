@@ -7,10 +7,11 @@
 #include <string>
 #include <sstream>
 #include <limits>
+#include <wchar.h>
 
 using namespace std;
 
-//Cambiar las structuras cosa que sea char(?)
+// Estructura para almacenar los datos de los empleados
 struct Empleado {
     int CI;
     char puesto[30];
@@ -18,17 +19,20 @@ struct Empleado {
     double sueldo;
 };
 
+// Estructura para almacenar los datos de los clientes
 struct Cliente {
     int CI;
     char nombre[50];
 };
 
+// Estructura para almacenar los datos de los platos del menú
 struct Plato {
     int codigo;
     char nombre[100];
     double precio;
 };
 
+// Estructura para almacenar los datos de los ingredientes
 struct Ingredientes {
     int codigoIngrediente;
     char nombre[50];
@@ -36,12 +40,14 @@ struct Ingredientes {
     double precio;
 };
 
+// Estructura para almacenar los datos de las recetas de los platos del menú
 struct Receta {
     int codigoPlato;
     int CodigoIngrediente;
     int cantidad;
 };
 
+// Estructura para almacenar los datos de las facturas
 struct Factura {
     int CI;
     char nombreCliente[50];
@@ -52,20 +58,25 @@ struct Factura {
     char fecha[10];
 };
 
+// Estructura para almacenar los datos de las reservas
 struct Reserva{
     int CI;
     char nombreCliente[50];
     char fecha[10];
 };
 
+// Estructura para almacenar los datos de las finanzas
 struct Finanzas{
     long double totalVentas = 0.0, gastosIngredientes = 0.0;
 };
 
+// Datos de los usuarios y contraseñas del gerente y el cajero
 const char* GERENTE_USUARIO = "gerente";
 const char* GERENTE_CONTRASENA = "54321";
 const char* CAJERO_USUARIO = "cajero";
 const char* CAJERO_CONTRASENA = "12345";
+
+// Nombres de los archivos utilizados
 const char* ARCHIVO_EMPLEADOS = "empleados.bin";
 const char* ARCHIVO_CLIENTES = "clientes.bin";
 const char* ARCHIVO_MENU = "menu.bin";
@@ -80,8 +91,7 @@ const char* ARCHIVO_TEMPORAL = "temporal.bin";
 const double IMPUESTO = 0.13;
 
 
-// funciones
-void inicializarArchivos();
+// Funciones
 void pantallaAcceso();
 
 void menuGerente();
@@ -111,11 +121,11 @@ void gestionarMenu();
 void IngredienteNuevo();
 void AgregarReceta (int, int);
 void AniadirIngredientesReceta(int);
-void gestionarFacturas();
 void gestionarIngredientes();
 void gestionarReservas(int);
 
 bool verificarCodigo(int);
+bool verificarCliente(int);
 Cliente nombreCliente(int);
 Plato devolverPlato(int);
 void ActualizarInredientes(int);
@@ -129,39 +139,14 @@ void menuCliente(int);
 int obtenerEnteroDesdeEntrada();
 double obtenerDoubleDesdeEntrada();
 
-// Función principal la bonita aaaaaaaaaaaaaaaaaaa
+
 int main() {
-    //inicializarArchivos();
-    //pantallaAcceso();
-    obtenerEnteroDesdeEntrada();
+    setlocale(LC_ALL, "");
+    pantallaAcceso();
     return 0;
 }
 
-void inicializarArchivos() {
-    ofstream archivoEmpleados;
-    archivoEmpleados.open(ARCHIVO_EMPLEADOS, ios::app | ios::binary);
-    archivoEmpleados.close();
-
-    ofstream archivoClientes;
-    archivoClientes.open(ARCHIVO_CLIENTES, ios::app | ios::binary);
-    archivoClientes.close();
-
-    ofstream archivoMenu;
-    archivoMenu.open(ARCHIVO_MENU, ios::app | ios::binary);
-    archivoMenu.close();
-
-    ofstream archivoFactura;
-    archivoFactura.open(ARCHIVO_FACTURA, ios::app | ios::binary);
-    archivoFactura.close();
-
-    ofstream archivoFinanzas;
-    archivoFinanzas.open(ARCHIVO_FINANZAS, ios::app | ios::binary);
-    archivoFinanzas.close();
-    
-    cout << ">> Archivos inicializados." << endl;
-}
-
-// Implementación de funciones
+// Pantalla inical, donde el usuario podrá iniciar sesión o ingresar como cliente y ver el menú
 void pantallaAcceso() {
     string usuario, contrasena, seleccion;
 
@@ -191,11 +176,20 @@ void pantallaAcceso() {
             else {
                 if(i + 1 == 3){
                     cout << "\n>> Ha ingresado como cliente." << endl << endl;
-                    system("pause");
                     menuCliente(0);
+                    cout << "\n\n[1] Volver\t[2] Salir\n\n--> ";
+                    cin >> seleccion;
+
+                    if(seleccion == "1"){
+                        pantallaAcceso();
+                    }
+                    else{
+                        cout << "\n>> Saliendo del sistema." << endl;
+                        exit(0);
+                    }
                 }
                 else{
-                    cout << "\n>> Acceso no autorizado. Vuelva a intentar." << endl << endl;
+                    cout << "\n>> Usuario o contraseña incorrectos. Vuelva a intentar." << endl << endl;
                     system("pause");
                 }
             }
@@ -204,26 +198,28 @@ void pantallaAcceso() {
     }
     else if(seleccion == "2"){
         menuCliente(0);
-        cout << "\n[1] Volver\t[2] Salir\n\n--> ";
+        cout << "\n\n[1] Volver\t[2] Salir\n\n--> ";
         cin >> seleccion;
 
         if(seleccion == "1"){
             pantallaAcceso();
         }
         else{
-            cout << "\n>> Salienedo del sistema." << endl;
+            cout << "\n>> Saliendo del sistema." << endl;
             exit(0);
         }
     }
     else{
-        cout << "\n>> Salienedo del sistema." << endl;
+        cout << "\n>> Saliendo del sistema." << endl;
         exit(0);
     }
     
 }
 
+// Menú de opciones del gerente
 void menuGerente() {
     while (true) {
+        system("cls");
         cout << "\nMENU GERENTE" << endl;
         cout << "============" << endl;
         cout << "\n\t1. Gestionar empleados." << endl;
@@ -261,6 +257,8 @@ void menuGerente() {
                 escribirArchivo(f);
                 cout << "\n>> Factura generada correctamente." << endl;
                 imprimirFactura(f);
+                cout << endl;
+                system("pause");
                 break;
             }
                 break;
@@ -270,11 +268,13 @@ void menuGerente() {
             case 8:
                 pantallaAcceso();
             default:
-                cout << "\n>> Intente de nuevo." << endl;
+                cout << "\n>> Intente de nuevo." << endl << endl;
+                system("pause");
         }
     }
 }
 
+// Permite ingresar la información de un empleado 
 Empleado nuevoEmpleado(){
     Empleado e;
     cout << "\n\t- Ingrese el CI del empleado: ";
@@ -290,6 +290,7 @@ Empleado nuevoEmpleado(){
     return e;
 }
 
+// Permite ingresar la información de un cliente
 Cliente nuevoCliente(){
     Cliente c;
     cout << "\n\t- Ingrese el CI del cliente: ";
@@ -301,6 +302,7 @@ Cliente nuevoCliente(){
     return c;
 }
 
+// Permite ingresar la información de un plato
 Plato nuevoPlato(int x){
     ifstream platos;
     platos.open(ARCHIVO_MENU, ios::binary);
@@ -322,6 +324,7 @@ Plato nuevoPlato(int x){
     return p;
 }
 
+// Escribe los datos de un empleado en el archivo de empleados
 void escribirArchivo(Empleado e){
     ofstream escritura;
     escritura.open(ARCHIVO_EMPLEADOS, ios::binary | ios::app);
@@ -334,6 +337,7 @@ void escribirArchivo(Empleado e){
     escritura.close();
 }
 
+// Escribe los datos de un cliente en el archivo de clientes
 void escribirArchivo(Cliente c){
     ofstream escritura;
     escritura.open(ARCHIVO_CLIENTES, ios::binary | ios::app);
@@ -346,6 +350,7 @@ void escribirArchivo(Cliente c){
     escritura.close();
 }
 
+// Escribe los datos de un platos en el archivo del menú
 void escribirArchivo(Plato p){
     ofstream escritura;
     escritura.open(ARCHIVO_MENU, ios::binary | ios::app);
@@ -358,6 +363,7 @@ void escribirArchivo(Plato p){
     escritura.close();
 }
 
+// Escribe los datos de un facturas en el archivo de facturas
 void escribirArchivo(Factura f){
     ofstream escritura;
     escritura.open(ARCHIVO_FACTURA, ios::binary | ios::app);
@@ -370,6 +376,7 @@ void escribirArchivo(Factura f){
     escritura.close();
 }
 
+// Escribe los datos de un reservas en el archivo de reservas
 void escribirArchivo(Reserva r){
     ofstream escritura;
     escritura.open(ARCHIVO_RESERVA, ios::binary | ios::app);
@@ -382,6 +389,7 @@ void escribirArchivo(Reserva r){
     escritura.close();
 }
 
+// Elimina los datos seleccionados del archivo seleccionado
 void eliminarDeArchivo(const char* archivo, int x){
     ifstream lectura;
     lectura.open(archivo, ios::binary);
@@ -426,6 +434,7 @@ void eliminarDeArchivo(const char* archivo, int x){
     rename(ARCHIVO_TEMPORAL, archivo);
 }
 
+// Modifica los datos de un empleado del archivo de empleados
 void modificarArchivo(int x, Empleado empleado){
     ifstream lectura;
     lectura.open(ARCHIVO_EMPLEADOS, ios::binary);
@@ -451,6 +460,7 @@ void modificarArchivo(int x, Empleado empleado){
     rename(ARCHIVO_TEMPORAL, ARCHIVO_EMPLEADOS);
 }
 
+// Modifica los datos de un cliente del archivo de clientes
 void modificarArchivo(int x, Cliente cliente){
     ifstream lectura;
     lectura.open(ARCHIVO_CLIENTES, ios::binary);
@@ -476,6 +486,7 @@ void modificarArchivo(int x, Cliente cliente){
     rename(ARCHIVO_TEMPORAL, ARCHIVO_CLIENTES);
 }
 
+// Modifica los datos de un plato del archivo del menú
 void modificarArchivo(int x, Plato plato){
     ifstream lectura;
     lectura.open(ARCHIVO_MENU, ios::binary);
@@ -501,6 +512,7 @@ void modificarArchivo(int x, Plato plato){
     rename(ARCHIVO_TEMPORAL, ARCHIVO_MENU);
 }
 
+// Modifica los datos de una factura  del archivo de reservas
 void modificarArchivo(int x, Reserva reserva){
     ifstream lectura;
     lectura.open(ARCHIVO_RESERVA, ios::binary);
@@ -526,6 +538,7 @@ void modificarArchivo(int x, Reserva reserva){
     rename(ARCHIVO_TEMPORAL, ARCHIVO_RESERVA);
 }
 
+// Muestra los datos de un archivo seleccionado
 void mostrar(const char* archivo){
     ifstream lectura;
     lectura.open(archivo, ios::binary);
@@ -572,11 +585,12 @@ void mostrar(const char* archivo){
     lectura.close();
 }
 
+// Le permite al gerente gestionar los empleados
 void gestionarEmpleados() {
-    cout << "\nGESTION DE EMPLEADOS" << endl;
-    cout << "====================" << endl;
-
     do{
+        system("cls");
+        cout << "\nGESTION DE EMPLEADOS" << endl;
+        cout << "====================" << endl;
         cout << "\n\t1. Añadir empleado." << endl;
         cout << "\t2. Eliminar empleado." << endl;
         cout << "\t3. Modificar empleado." << endl;
@@ -591,38 +605,44 @@ void gestionarEmpleados() {
             int ci;
             case 1:
                 escribirArchivo(nuevoEmpleado());
-                cout << "\n>> Se ha añadido al empleado." << endl;
+                cout << "\n>> Se ha añadido al empleado." << endl << endl;
+                system("pause");
                 break;
             case 2:
                 cout << "\nIngrese el CI del empleado a eliminar: ";
                 cin >> ci;
                 eliminarDeArchivo(ARCHIVO_EMPLEADOS, ci);
-                cout << "\n>> Se ha eliminado al empleado." << endl;
+                cout << "\n>> Se ha eliminado al empleado." << endl << endl;
+                system("pause");
                 break;
             case 3:
                 cout << "\nIngrese el CI del empleado a modificar: ";
                 cin >> ci;
                 modificarArchivo(ci, nuevoEmpleado());
-                cout << "\n>> Se ha modificado al empleado." << endl;
+                cout << "\n>> Se ha modificado al empleado." << endl << endl;
+                system("pause");
                 break;
             case 4:
                 mostrar(ARCHIVO_EMPLEADOS);
-                cout << endl;
+                cout << endl << endl;
+                system("pause");
                 break;
             case 5:
                 menuGerente();
             default:
-                cout << "\n>> Intente de nuevo." << endl;
+                cout << "\n>> Intente de nuevo." << endl << endl;
+                system("pause");
         }  
     }
     while(true);
 }
 
+// Le permite al gerente gestionar los clientes
 void gestionarClientes() {
-    cout << "\nGESTION DE CLIENTES" << endl;
-    cout << "====================" << endl;
-
     do{
+        system("cls");
+        cout << "\nGESTION DE CLIENTES" << endl;
+        cout << "====================" << endl;
         cout << "\n\t1. Añadir cliente." << endl;
         cout << "\t2. Eliminar cliente." << endl;
         cout << "\t3. Modificar cliente." << endl;
@@ -637,38 +657,44 @@ void gestionarClientes() {
             int ci;
             case 1:
                 escribirArchivo(nuevoCliente());
-                cout << "\n>> Se ha añadido al cliente" << endl;
+                cout << "\n>> Se ha añadido al cliente" << endl << endl;
+                system("pause");
                 break;
             case 2:
                 cout << "\nIngrese el CI del cliente a eliminar: ";
                 cin >> ci;
                 eliminarDeArchivo(ARCHIVO_CLIENTES, ci);
-                cout << "\n>> Se ha eliminado al cliente." << endl;
+                cout << "\n>> Se ha eliminado al cliente." << endl << endl;
+                system("pause");
                 break;
             case 3:
                 cout << "\nIngrese el CI del cliente a modificar: ";
                 cin >> ci;
                 modificarArchivo(ci, nuevoCliente());
-                cout << "\n>> Se ha modificado al cliente." << endl;
+                cout << "\n>> Se ha modificado al cliente." << endl << endl;
+                system("pause");
                 break;
             case 4:
                 mostrar(ARCHIVO_CLIENTES);
-                cout << endl;
+                cout << endl << endl;
+                system("pause");
                 break;
             case 5:
                 menuGerente();
             default:
-                cout << "\n>> Intente de nuevo." << endl;
+                cout << "\n>> Intente de nuevo." << endl << endl;
+                system("pause");
         }  
     }
     while(true);
 }
 
+// Le permite al gerente gestionar el menú
 void gestionarMenu() {
-    cout << "\nGESTION DEL MENU" << endl;
-    cout << "=================" << endl;
-
     do{
+        system("cls");
+        cout << "\nGESTION DEL MENU" << endl;
+        cout << "=================" << endl;
         cout << "\n\t1. Añadir plato." << endl;
         cout << "\t2. Eliminar plato." << endl;
         cout << "\t3. Modificar plato." << endl;
@@ -683,33 +709,39 @@ void gestionarMenu() {
             int codigo;
             case 1:
                 escribirArchivo(nuevoPlato(-1));
-                cout << "\n>> Se ha añadido el plato." << endl;
+                cout << "\n>> Se ha añadido el plato." << endl << endl;
+                system("pause");
                 break;
             case 2:
                 cout << "\nIngrese el codigo del plato a eliminar: ";
                 cin >> codigo;
                 eliminarDeArchivo(ARCHIVO_MENU, codigo);
-                cout << "\n>> Se ha eliminado el plato." << endl;
+                cout << "\n>> Se ha eliminado el plato." << endl << endl;
+                system("pause");
                 break;
             case 3:
                 cout << "\nIngrese el codigo del plato a modificar: ";
                 cin >> codigo;
                 modificarArchivo(codigo, nuevoPlato(codigo));
-                cout << "\n>> Se ha modificado el plato." << endl;
+                cout << "\n>> Se ha modificado el plato." << endl << endl;
+                system("pause");
                 break;
             case 4:
                 mostrar(ARCHIVO_MENU);
-                cout << endl;
+                cout << endl << endl;
+                system("pause");
                 break;
             case 5:
                 menuGerente();
             default:
-                cout << "\n>> Intente de nuevo." << endl;
+                cout << "\n>> Intente de nuevo." << endl << endl;
+                system("pause");
         }  
     }
     while(true);
 }
 
+// Muestra los ingredientes del inventario y los almacena en un vector
 vector <Ingredientes> MostrarIngreDientes()
 {
     ifstream archivo;
@@ -731,6 +763,8 @@ vector <Ingredientes> MostrarIngreDientes()
     archivo.close();
     return ingre;
 }
+
+// Ingresa los ingredientes de la receta de un plato
 void AniadirIngredientesReceta(int codigoPlato)
 {
     int opcion;
@@ -767,6 +801,7 @@ void AniadirIngredientesReceta(int codigoPlato)
     }
 }
 
+// Permite añadir un ingrediente nuevo al inventario
 void IngredienteNuevo()
 {
     ifstream archivo;
@@ -789,6 +824,8 @@ void IngredienteNuevo()
     aniadir.write((char*)&ing, sizeof(Ingredientes));
     aniadir.close();
 }
+
+// Escribe la receta de un plato en el archivo de recetas
 void AgregarReceta (int codigoPlato, int codigoing)
 {
     cout<<"Ingrese la cantidad del ingrediente que entra a la receta: ";
@@ -804,116 +841,130 @@ void AgregarReceta (int codigoPlato, int codigoing)
     recet.close();
 }
 
+// Le permite al gerente gestionar los ingredientes del inventario
 void gestionarIngredientes()
 {
-    cout << "\nGESTION DE INGREDIENTES" << endl;
-    cout << "=======================" << endl;
-    cout << "\n\t1. Realizar pedido de un ingrediente ya existente." << endl;
-    cout << "\t2. Realizr pedido de un ingrediente nuevo." << endl;
-    cout << "\t3. Mostrar inventario." << endl;
-    cout << "\t4. Volver." << endl;
+    do{
+        system("cls");
+        cout << "\nGESTION DE INGREDIENTES" << endl;
+        cout << "=======================" << endl;
+        cout << "\n\t1. Realizar pedido de un ingrediente ya existente." << endl;
+        cout << "\t2. Realizr pedido de un ingrediente nuevo." << endl;
+        cout << "\t3. Mostrar inventario." << endl;
+        cout << "\t4. Volver." << endl;
 
-    int opcion;
-    cout << "\n\t-->  ";
-    opcion = obtenerEnteroDesdeEntrada();
-    switch(opcion)
-    {
-        case 1:
+        int opcion;
+        cout << "\n\t-->  ";
+        opcion = obtenerEnteroDesdeEntrada();
+        switch(opcion)
         {
-            ifstream archivo;
-            archivo.open(ARCHIVO_INGREDIENTES, ios::binary);
-
-            cout << "\n>> Lista de ingredientes: " << endl;
-
-            Ingredientes ing;
-            vector<Ingredientes> ingre;
-
-            while(archivo.read((char*)&ing, sizeof(Ingredientes)))
+            case 1:
             {
-                cout << setfill(' ') << "\n- Codigo: " << setw(6) << left << ing.codigoIngrediente;
-                cout << "Nombre: " << setw(22) << left << ing.nombre;
-                cout << "Cantidad: "<< setw(12) << left << ing.cantidad;
-                cout << "Precio: " << ing.precio << " BOB." << endl;
-                ingre.push_back(ing);
-            }
-            archivo.close();
+                ifstream archivo;
+                archivo.open(ARCHIVO_INGREDIENTES, ios::binary);
 
-            cout << "\n>> Ingrese el codigo de que ingrediente desea hacer el pedido: ";
-            int codigoing;
-            codigoing = obtenerEnteroDesdeEntrada();
+                cout << "\n>> Lista de ingredientes: " << endl;
 
-            cout << "\n>> Ingrese de cuantos ingredientes sera el pedido: ";
-            int cantidad;
-            cantidad = obtenerEnteroDesdeEntrada();
+                Ingredientes ing;
+                vector<Ingredientes> ingre;
 
-            double totalCompra = 0;
-
-            for(unsigned int i=0; i < ingre.size(); i++)
-            {
-                if(ingre[i].codigoIngrediente == codigoing){
-                    ingre[i].cantidad += cantidad;
-                    totalCompra = ingre[i].precio * cantidad;
-                    cout << "\n>> Se han comprado " << cantidad << " " << ingre[i].nombre << "s a " << totalCompra << " BOB." << endl;
+                while(archivo.read((char*)&ing, sizeof(Ingredientes)))
+                {
+                    cout << setfill(' ') << "\n- Codigo: " << setw(6) << left << ing.codigoIngrediente;
+                    cout << "Nombre: " << setw(22) << left << ing.nombre;
+                    cout << "Cantidad: "<< setw(12) << left << ing.cantidad;
+                    cout << "Precio: " << ing.precio << " BOB." << endl;
+                    ingre.push_back(ing);
                 }
+                archivo.close();
+
+                cout << "\n>> Ingrese el codigo de que ingrediente desea hacer el pedido: ";
+                int codigoing;
+                codigoing = obtenerEnteroDesdeEntrada();
+
+                cout << "\n>> Ingrese de cuantos ingredientes sera el pedido: ";
+                int cantidad;
+                cantidad = obtenerEnteroDesdeEntrada();
+
+                double totalCompra = 0;
+
+                for(unsigned int i=0; i < ingre.size(); i++)
+                {
+                    if(ingre[i].codigoIngrediente == codigoing){
+                        ingre[i].cantidad += cantidad;
+                        totalCompra = ingre[i].precio * cantidad;
+                        cout << "\n>> Se han comprado " << cantidad << " " << ingre[i].nombre << "s a " << totalCompra << " BOB." << endl;
+                    }
+                }
+
+                ofstream sobreescribir;
+                sobreescribir.open(ARCHIVO_INGREDIENTES, ios::binary);
+                for(unsigned int i=0; i<ingre.size(); i++)
+                sobreescribir.write((char*)&ingre[i], sizeof(Ingredientes));
+                sobreescribir.close();
+
+                ifstream lectura;
+                ofstream escritura;
+                Finanzas fin;
+                lectura.open(ARCHIVO_FINANZAS, ios::binary);
+                escritura.open(ARCHIVO_TEMPORAL, ios::binary);
+                lectura.read((char*)&fin, sizeof(Finanzas));
+                fin.gastosIngredientes += totalCompra;
+                escritura.write((char*)&fin, sizeof(Finanzas));
+                lectura.close();
+                escritura.close();
+                remove(ARCHIVO_FINANZAS);
+                rename(ARCHIVO_TEMPORAL, ARCHIVO_FINANZAS);
+
+                cout << endl;
+                system("pause");
+                break;
             }
-
-            ofstream sobreescribir;
-            sobreescribir.open(ARCHIVO_INGREDIENTES, ios::binary);
-            for(unsigned int i=0; i<ingre.size(); i++)
-            sobreescribir.write((char*)&ingre[i], sizeof(Ingredientes));
-            sobreescribir.close();
-
-            ifstream lectura;
-            ofstream escritura;
-            Finanzas fin;
-            lectura.open(ARCHIVO_FINANZAS, ios::binary);
-            escritura.open(ARCHIVO_TEMPORAL, ios::binary);
-            lectura.read((char*)&fin, sizeof(Finanzas));
-            fin.gastosIngredientes += totalCompra;
-            escritura.write((char*)&fin, sizeof(Finanzas));
-            lectura.close();
-            escritura.close();
-            remove(ARCHIVO_FINANZAS);
-            rename(ARCHIVO_TEMPORAL, ARCHIVO_FINANZAS);
-            break;
-        }
-        case 2:
-        {
-            IngredienteNuevo();
-            break;
-        }
-        case 3:
-        {
-            ifstream archivo;
-            archivo.open(ARCHIVO_INGREDIENTES, ios::binary);
-
-            cout << "\n>> Lista de ingredientes: " << endl;
-
-            Ingredientes ing;
-
-            while(archivo.read((char*)&ing, sizeof(Ingredientes)))
+            case 2:
             {
-                cout << setfill(' ') << "\n- Codigo: " << setw(6) << left << ing.codigoIngrediente;
-                cout << "Nombre: " << setw(22) << left << ing.nombre;
-                cout << "Cantidad: "<< setw(12) << left << ing.cantidad;
-                cout << "Precio: " << ing.precio << " BOB." << endl;
+                IngredienteNuevo();
+                cout << "\n>> Se ha añadido el nuevo ingrediente." << endl << endl;
+                system("pause");
+                break;
             }
-            archivo.close();
+            case 3:
+            {
+                ifstream archivo;
+                archivo.open(ARCHIVO_INGREDIENTES, ios::binary);
+
+                cout << "\n>> Lista de ingredientes: " << endl;
+
+                Ingredientes ing;
+
+                while(archivo.read((char*)&ing, sizeof(Ingredientes)))
+                {
+                    cout << setfill(' ') << "\n- Codigo: " << setw(6) << left << ing.codigoIngrediente;
+                    cout << "Nombre: " << setw(22) << left << ing.nombre;
+                    cout << "Cantidad: "<< setw(12) << left << ing.cantidad;
+                    cout << "Precio: " << ing.precio << " BOB." << endl;
+                }
+                archivo.close();
+                cout << endl;
+                system("pause");
+                break;
+            }
+            case 4:
+                menuGerente();
+            default:
+                cout << "\n>> Intente de nuevo." << endl << endl;
+                system("pause");
             break;
         }
-        case 4:
-            menuGerente();
-        default:
-            cout << "\n>> Intente de nuevo." << endl;
-        break;
     }
+    while(true);
 }
 
+// Le permite al gerente gestionar las reservas
 void gestionarReservas(int x){
-    cout << "\nGESTION DE RESERVAS" << endl;
-    cout << "===================" << endl;
-
     do{
+        system("cls");
+        cout << "\nGESTION DE RESERVAS" << endl;
+        cout << "===================" << endl;
         cout << "\n\t1. Añadir reserva." << endl;
         cout << "\t2. Eliminar reserva." << endl;
         cout << "\t3. Modificar reserva." << endl;
@@ -928,23 +979,27 @@ void gestionarReservas(int x){
             int CI;
             case 1:
                 escribirArchivo(nuevaReserva());
-                cout << "\n>> Se ha añadido la reserva." << endl;
+                cout << "\n>> Se ha añadido la reserva." << endl << endl;
+                system("pause");
                 break;
             case 2:
                 cout << "\nIngrese el CI de la reserva del cliente a eliminar: ";
                 cin >> CI;
                 eliminarDeArchivo(ARCHIVO_RESERVA, CI);
-                cout << "\n>> Se ha eliminado la reserva." << endl;
+                cout << "\n>> Se ha eliminado la reserva." << endl << endl;
+                system("pause");
                 break;
             case 3:
                 cout << "\nIngrese el CI de la reserva del cliente a modificar: ";
                 cin >> CI;
                 modificarArchivo(CI, nuevaReserva());
-                cout << "\n>> Se ha modificado la reserva." << endl;
+                cout << "\n>> Se ha modificado la reserva." << endl << endl;
+                system("pause");
                 break;
             case 4:
                 mostrar(ARCHIVO_RESERVA);
-                cout << endl;
+                cout << endl << endl;
+                system("pause");
                 break;
             case 5:
             {
@@ -955,12 +1010,14 @@ void gestionarReservas(int x){
                 }
             } 
             default:
-                cout << "\n>> Intente de nuevo." << endl;
+                cout << "\n>> Intente de nuevo." << endl << endl;
+                system("pause");
         }  
     }
     while(true);
 }
 
+// Devuelve la estructura del cliente a partir de su carnet de identidad
 Cliente nombreCliente(int ci){
     ifstream lectura;
     lectura.open(ARCHIVO_CLIENTES, ios::binary);
@@ -977,6 +1034,7 @@ Cliente nombreCliente(int ci){
     return c;
 }
 
+// Verifica si el cliente ha sido registrado en el archivo de clientes
 bool verificarCliente(int ci){
     ifstream lectura;
     lectura.open(ARCHIVO_CLIENTES, ios::binary);
@@ -993,6 +1051,7 @@ bool verificarCliente(int ci){
     return false;
 }
 
+// Verifica si el codigo de un plato ha sido registrado en el menú
 bool verificarCodigo(int codigo){
     ifstream lectura;
     lectura.open(ARCHIVO_MENU, ios::binary);
@@ -1009,6 +1068,7 @@ bool verificarCodigo(int codigo){
     return false;
 }
 
+// Devuelve la estructura de un plato a partir de su código
 Plato devolverPlato(int codigo){
     ifstream lectura;
     lectura.open(ARCHIVO_MENU, ios::binary);
@@ -1026,6 +1086,7 @@ Plato devolverPlato(int codigo){
     return p;
 }
 
+// Actualiza el inventario de ingrediente de acuerdo a un plato vendido
 void ActualizarInredientes(int codigo)
 {
     ifstream ingredientesarchivolectura;
@@ -1056,6 +1117,7 @@ void ActualizarInredientes(int codigo)
     IngrecientesArchivoEscritura.close();
 }
 
+// Calcula el total de una venta
 double calcularTotal(vector<Plato> platos){
     ifstream lectura;
 
@@ -1074,6 +1136,7 @@ double calcularTotal(vector<Plato> platos){
     return total;
 }
 
+// Llena los datos necesarios de una factura
 Factura nuevaFactura(){
     Factura f;
     cout << "\n\t- Ingrese el CI del cliente (0: sin datos): ";
@@ -1148,7 +1211,9 @@ Factura nuevaFactura(){
     return f;
 }
 
+// Le permite al gerente visualizar las finanzas de la tienda
 void gestionarFinanzas() {
+    system("cls");
     ifstream lectura;
     lectura.open(ARCHIVO_EMPLEADOS, ios::binary);
 
@@ -1176,9 +1241,12 @@ void gestionarFinanzas() {
     cout << "\tDescuentos (13% de impuestos): " << descuentos << " BOB." << endl;
     cout << "\tGastos en salarios: " << totalSalarios << " BOB." << endl;
     cout << "\tGastos en ingredientes: " << fin.gastosIngredientes << " BOB." << endl;
-    cout << "\tSaldo final: " << saldoFinal << " BOB." << endl;
+    cout << "\tSaldo final: " << saldoFinal << " BOB." << endl << endl;
+
+    system("pause");
 }
 
+// Imprime en consola una factura
 void imprimirFactura(Factura f){
     cout << "\n\nFACTURA -----" << endl;
     cout << "\nFecha: " << f.fecha << endl;
@@ -1193,6 +1261,7 @@ void imprimirFactura(Factura f){
     cout << "Cambio: " << f.cambio << " BOB" << endl;
 }
 
+// Llena los datos de una reserva
 Reserva nuevaReserva(){
     Reserva r;
     cout << "\n\tIngrese el CI del cliente: ";
@@ -1223,8 +1292,10 @@ Reserva nuevaReserva(){
     return r;
 }
 
+// Menú de opciones del cajero
 void menuCajero(){
     while (true) {
+        system("cls");
         cout << "\nMENU CAJERO" << endl;
         cout << "=============" << endl;
         cout << "\t1. Ver menu." << endl;
@@ -1239,6 +1310,8 @@ void menuCajero(){
         switch(opcion){
             case 1:
                 menuCliente(0);
+                cout << endl;
+                system("pause");
                 break;
             case 2:
             {
@@ -1247,6 +1320,8 @@ void menuCajero(){
                 escribirArchivo(f);
                 cout << "\n>> Factura generada correctamente." << endl;
                 imprimirFactura(f);
+                cout << endl;
+                system("pause");
                 break;
             }
             case 3:
@@ -1254,12 +1329,15 @@ void menuCajero(){
             case 4:
                 pantallaAcceso();
             default:
-                cout << "\n>> Intente de nuevo." << endl;
+                cout << "\n>> Intente de nuevo." << endl << endl;
+                system("pause");
         }
     }
 }
 
+// Despliega el menú
 void menuCliente(int x){
+    system("cls");
     ifstream lectura;
     lectura.open(ARCHIVO_MENU, ios::binary);
 
@@ -1280,6 +1358,7 @@ void menuCliente(int x){
     lectura.close();
 }
 
+// Verifica la entrada de valores enteros
 int obtenerEnteroDesdeEntrada() 
 {
     string entrada;
@@ -1291,24 +1370,25 @@ int obtenerEnteroDesdeEntrada()
         if (iss >> entero && iss.eof()) {
             break;
         } else {
-            cout << "Error. Por favor, ingresa un valor entero válido." << endl;
+            cout << "\n>> Error. Por favor, ingresa un valor entero válido." << endl;
         }
     }
-    return entero;
+return entero;
 }
 
+// Verifica la entrada de valores double
 double obtenerDoubleDesdeEntrada() 
 {
     string entrada;
     double valorDouble;
     while (true) {
-        cout << "Ingresa un valor double: ";
+        cout << "\n>> Ingresa un valor double: ";
         getline(cin, entrada);
         istringstream iss(entrada);
         if (iss >> valorDouble && iss.eof()) {
             break;
         } else {
-            cerr << "Error. Por favor, ingresa un valor double válido." << endl;
+            cerr << "\n>> Error. Por favor, ingresa un valor double válido." << endl;
         }
     }
     return valorDouble;
